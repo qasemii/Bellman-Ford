@@ -5,8 +5,8 @@
 #include <stdbool.h>
 #include <omp.h>
 #include <limits.h>
-#include "../inc/algorithms.h"
-#include "../inc/config.h"
+
+#include "inc/config.h"
 
 #define BLOCK_SIZE 256
 
