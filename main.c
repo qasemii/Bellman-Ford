@@ -43,7 +43,6 @@ int main() {
     }
 
     // Read each line in the CSV file and update the matrix
-    int count = 0;
     while (fgets(line, sizeof(line), file)) {
         char* field;
         char* token;
@@ -62,10 +61,10 @@ int main() {
         distance = atof(token);
         
         // Update the matrix with the distance value
-        matrix[src_id][dest_id] = distance;
+        if (src_id < VERTICES && dest_id < VERTICES) {
+            matrix[src_id][dest_id] = distance;
+        }    
         
-        count++;
-        if (count==VERTICES) break;
     }
 
     // Close the file
