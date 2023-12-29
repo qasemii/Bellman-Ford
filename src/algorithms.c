@@ -119,8 +119,8 @@ float* BellmanFord(float** Graph, int n, int start) {
 
     // Creating cost matrix
     #pragma omp parallel for num_threads(NUM_THREADS) collapse(2)
-    for (i = 0; i < n; i++) {
-        for (j = 0; j < n; j++) {
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
             if (Graph[i][j] == 0)
                 cost[i][j] = INFINITY;
             else
