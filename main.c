@@ -99,17 +99,16 @@ int main() {
     //     free(matrix[i]);
     // }
 
-
-
     // one node to the others
 
     distance = BellmanFord(matrix, VERTICES, 0);
+    end = omp_get_wtime();
+    
     // Printing the distance
     for (int i = 0; i < VERTICES; i++)
         if (i != start) {
             printf("\nDistance from %d to %d: %.3f", 0, i, distance[i]);
         }
-    end = omp_get_wtime();
 
     free(distance);
     free(matrix);
