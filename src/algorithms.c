@@ -113,7 +113,7 @@ float* BellmanFord(float** Graph, int n, int start) {
 
     // Allocate memory for the cost matrix and other arrays
     cost = (float**)malloc(n * sizeof(float*));
-    for (i = 0; i < n; i++) {
+    for (int i = 0; i < n; i++) {
         cost[i] = (float*)malloc(n * sizeof(float));
     }
 
