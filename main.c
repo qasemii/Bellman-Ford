@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <omp.h>
 #include <limits.h>
-#include "inc/dijkstra.h"
+#include "inc/algorithms.h"
 #include "inc/sort.h"
 
 int main() {
@@ -74,7 +74,7 @@ int main() {
     // #pragma omp parallel num_threads(NUM_THREADS) private(distance)
     for (int u = 0; u < VERTICES; u++){
         // int u = 0;
-        distance = Dijkstra(matrix, VERTICES, u);
+        distance = BellmanFord(matrix, VERTICES, u);
         merge_sort(distance, 0, VERTICES-1);
         // Printing the distance
         for (int i = 0; i < VERTICES; i++)
