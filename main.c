@@ -71,25 +71,39 @@ int main() {
 
 
     start = omp_get_wtime();
-    // #pragma omp parallel num_threads(NUM_THREADS) private(distance)
-    for (int u = 0; u < VERTICES; u++){
-        // int u = 0;
-        distance = BellmanFord(matrix, VERTICES, u);
-        merge_sort(distance, 0, VERTICES-1);
-        // Printing the distance
-        for (int i = 0; i < VERTICES; i++)
-            if (i != start) {
-                printf("\nDistance from %d to %d: %.3f", u, i, distance[i]);
-            }
-        free(distance);
-        
-    }
+
+    // all nodes to the others
+    
+    // // #pragma omp parallel num_threads(NUM_THREADS) private(distance)
+    // for (int u = 0; u < VERTICES; u++){
+    //     // int u = 0;
+    //     distance = BellmanFord(matrix, VERTICES, u);
+    //     merge_sort(distance, 0, VERTICES-1);
+    //     // Printing the distance
+    //     for (int i = 0; i < VERTICES; i++)
+    //         if (i != start) {
+    //             printf("\nDistance from %d to %d: %.3f", u, i, distance[i]);
+    //         }
+    //     free(distance);
+    // }
+    // // Free dynamically allocated memory for the Graph
+    // for (int i = 0; i < VERTICES; i++) {
+    //     free(matrix[i]);
+    // }
+
+
+
+    // one node to the others
+
+    distance = BellmanFord(matrix, VERTICES, 0);
+    // Printing the distance
+    for (int i = 0; i < VERTICES; i++)
+        if (i != start) {
+            printf("\nDistance from %d to %d: %.3f", 0, i, distance[i]);
+        }
     end = omp_get_wtime();
 
-    // Free dynamically allocated memory for the Graph
-    for (int i = 0; i < VERTICES; i++) {
-        free(matrix[i]);
-    }
+    free(distance);
     free(matrix);
 
     printf("\nExe time: %e sec\n", end-start);
