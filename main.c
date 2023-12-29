@@ -63,9 +63,10 @@ int main() {
         
         // Update the matrix with the distance value
         if (src_id < VERTICES && dest_id < VERTICES) {
+            n_edges++;
             matrix[src_id][dest_id] = distance;
         }    
-        n_edges++;
+        
     }
 
     // Close the file
