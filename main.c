@@ -43,6 +43,7 @@ int main() {
     }
 
     // Read each line in the CSV file and update the matrix
+    int n_edges = 0;
     while (fgets(line, sizeof(line), file)) {
         char* field;
         char* token;
@@ -64,15 +65,18 @@ int main() {
         if (src_id < VERTICES && dest_id < VERTICES) {
             matrix[src_id][dest_id] = distance;
         }    
-        
+        n_edges++;
     }
 
     // Close the file
     fclose(file);
+    printf("Network Specifications");
+    printf("\nNumber of nodes: %d", VERTICES);
+    printf("\nNumber of edges: %d", n_edges);
+    printf("\n----------------------------------------------");
+
 
     float* distance = (float*)malloc(VERTICES * sizeof(float));
-
-
     start = omp_get_wtime();
 
     // all nodes to the others
