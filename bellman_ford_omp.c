@@ -11,7 +11,7 @@
 #define VERTICES 983
 
 
-void read_file(const char* filename, int* weights) {
+void read_file(const char* filename, int* weights, int* n_edges) {
     // Initialize the matrix with INF and 0 for diagonals
     for (int i = 0; i < VERTICES; i++) {
         for (int j = 0; j < VERTICES; j++) {
@@ -28,6 +28,7 @@ void read_file(const char* filename, int* weights) {
 
     // Read each line in the CSV file and update the matrix
     char line[256];
+    n_edges = 0;
     while (fgets(line, sizeof(line), file)) {
         char* token;
         char* rest = line;
@@ -45,6 +46,7 @@ void read_file(const char* filename, int* weights) {
 
         // Update the matrix with the distance value
         if (src_id < VERTICES && dest_id < VERTICES) {
+            n_edges++;
             weights[src_id * VERTICES + dest_id] = distance;
         }
     }
@@ -153,10 +155,11 @@ int main(int argc, char **argv) {
     assert(argv[1] != NULL);
     int n_threads = atoi(argv[1]);
 
+    int n_edges;
+
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
-    read_file("data/london_temporal_at_23.csv", weights);
-
+    read_file("data/london_temporal_at_23.csv", weights, &n_edges);
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
@@ -171,7 +174,7 @@ int main(int argc, char **argv) {
 
     printf("Network Specifications----------\n");
     printf("Number of nodes:\t%d\n", VERTICES);
-    // printf("Number of edges:\t%d\n\n", n_edges);
+    printf("Number of edges:\t%d\n\n", n_edges);
     printf("OpenMP Specifications-----------\n");
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);

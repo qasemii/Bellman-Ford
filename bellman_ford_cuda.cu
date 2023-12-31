@@ -15,12 +15,12 @@ double gettime(void){
     return (ts.tv_sec + (double)ts.tv_nsec / 1e9);
 }
 
-void read_file(const char* filename, int* weights) {
-    // Initialize the matrix with INT_MAX and 0 for diagonals
+void read_file(const char* filename, int* weights, int* n_edges) {
+    // Initialize the matrix with INF and 0 for diagonals
     for (int i = 0; i < VERTICES; i++) {
         for (int j = 0; j < VERTICES; j++) {
             if (i != j) {
-                weights[i * VERTICES + j] = INT_MAX;
+                weights[i * VERTICES + j] = INF;
             } else {
                 weights[i * VERTICES + j] = 0;
             }
@@ -32,6 +32,7 @@ void read_file(const char* filename, int* weights) {
 
     // Read each line in the CSV file and update the matrix
     char line[256];
+    n_edges = 0;
     while (fgets(line, sizeof(line), file)) {
         char* token;
         char* rest = line;
@@ -49,6 +50,7 @@ void read_file(const char* filename, int* weights) {
 
         // Update the matrix with the distance value
         if (src_id < VERTICES && dest_id < VERTICES) {
+            n_edges++;
             weights[src_id * VERTICES + dest_id] = distance;
         }
     }
@@ -146,10 +148,12 @@ int main(int argc, char **argv) {
     assert(argv[1] != NULL && argv[2]!=NULL);
     int blocksPerGrid = atoi(argv[1]);
     int threadsPerBlock = atoi(argv[2]);
+
+    int n_edges;
     
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
-    read_file("data/london_temporal_at_23.csv", weights);
+    read_file("data/london_temporal_at_23.csv", weights, &n_edges);
 
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
