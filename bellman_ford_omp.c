@@ -6,15 +6,17 @@
 #include <limits.h>
 #include <assert.h>
 
+
+#define INF 999999
 #define VERTICES 983
 
 
 void read_file(const char* filename, int* weights) {
-    // Initialize the matrix with INT_MAX and 0 for diagonals
+    // Initialize the matrix with INF and 0 for diagonals
     for (int i = 0; i < VERTICES; i++) {
         for (int j = 0; j < VERTICES; j++) {
             if (i != j) {
-                weights[i * VERTICES + j] = INT_MAX;
+                weights[i * VERTICES + j] = INF;
             } else {
                 weights[i * VERTICES + j] = 0;
             }
@@ -53,8 +55,8 @@ void save_results(int *dist, bool has_negative_cycle) {
     FILE *outputf = fopen("omp_output.txt", "w");
     if (!has_negative_cycle) {
         for (int i = 0; i < VERTICES; i++) {
-            if (dist[i] > INT_MAX)
-                dist[i] = INT_MAX;
+            if (dist[i] > INF)
+                dist[i] = INF;
             fprintf(outputf, "%d\n", dist[i]);
         }
         fflush(outputf);
@@ -77,7 +79,7 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads, b
     // initializing the distance array
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
-        distance[i] = INT_MAX;
+        distance[i] = INF;
     }
     distance[start] = 0;
 
@@ -99,7 +101,7 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads, b
             for (int u = 0; u < n; u++) {
                 for (int v = local_start[my_rank]; v < local_end[my_rank]; v++) {
                     int weight = weights[u * n + v];
-                    if (weight < INT_MAX) {
+                    if (weight < INF) {
                         int new_dis = distance[u] + weight;
                         if (new_dis < distance[v]) {
                             local_has_change[my_rank] = true;
@@ -133,7 +135,7 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads, b
             #pragma omp parallel for reduction(| : has_change)
             for (int v = 0; v < n; v++) {
                 int weight = weights[u * n + v];
-                if (weight < INT_MAX) {
+                if (weight < INF) {
                     if (distance[u] + weight < distance[v]) { // if we can relax one more step, then we find a negative cycle
                         has_change = true;
                     }

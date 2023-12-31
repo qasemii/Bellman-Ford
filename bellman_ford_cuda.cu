@@ -6,6 +6,7 @@
 #include <time.h>
 // #include "hpc.h"
 
+#define INF 999999
 #define VERTICES 983
 
 double gettime(void){
@@ -77,7 +78,7 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, int n, bool
         for (int u = 0; u < n; u++) {
             for (int v = global_tid; v < n; v += elementSkip) {
                 int weight = d_weights[u * n + v];
-                if (weight < INT_MAX) {
+                if (weight < INF) {
                     int new_dist = d_distance[u] + weight;
                     if (new_dist < d_distance[v]) {
                         *d_has_next = true;
@@ -99,7 +100,7 @@ void bellman_ford(int *weights, int *distance, int start, int n, int blocksPerGr
 
     // initializing the distance array
     for (int i = 0; i < n; i++) {
-        distance[i] = INT_MAX;
+        distance[i] = INF;
     }
     distance[start] = 0;
 
