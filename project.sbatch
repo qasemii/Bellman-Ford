@@ -14,6 +14,6 @@ gcc -fopenmp bellman_ford_omp.c -o bellman_ford_omp
 nvcc bellman_ford_cuda.cu -o bellman_ford_cuda
 gcc compare_omp_cuda.c -o compare_omp_cuda
 
-# ./bellman_ford_omp 1
-# ./bellman_ford_cuda 128 1
-# ./compare_omp_cuda
+./bellman_ford_omp 1 #NUM_THREADS
+./bellman_ford_cuda 1 1 #blocksPerGrid, threadsPerBlock
+./compare_omp_cuda

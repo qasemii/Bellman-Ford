@@ -51,7 +51,7 @@ int main() {
         lineNumber++;
     }
     printf("Total mismatch answers:\t%d\n\n", mismatch);
-    printf("--------------------------------\n");
+    // printf("--------------------------------\n");
 
     fclose(file1);
     fclose(file2);
