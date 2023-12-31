@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <omp.h>
 #include <limits.h>
-
+#include <assert.h>
 
 #define VERTICES 983
 
@@ -133,7 +133,7 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
     for (int u = 0; u < n; u++) {
         #pragma omp parallel for reduction(| : has_change)
         for (int v = 0; v < n; v++) {
-            int weight = mat[u * n + v];
+            int weight = weights[u * n + v];
             if (weight < INT_MAX) {
                 // if we can relax one more step, then we find a negative cycle
                 if (distance[u] + weight < distance[v]) { 
@@ -148,9 +148,9 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
 }
 
 int main(int argc, char **argv) {
-    int n_threads = atoi(argv[1]);
     // make sure we pass number of threads (N_THREADS)
-    assert(n_threads != NULL);
+    assert(argv[1] != NULL);
+    int n_threads = atoi(argv[1]);
 
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
