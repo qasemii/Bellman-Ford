@@ -83,11 +83,10 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
     distance[0] = 0;
 
     #pragma omp parallel for
-    for (int i = 0; i < n_threads-1; i++) {
+    for (int i = 0; i < n_threads; i++) {
         local_start[i] = ave * i;
         local_end[i] = ave * (i + 1);
     }
-    local_start[n_threads-1] = ave * (n_threads-1);
     local_end[n_threads-1] = n;
 
     int iter_num = 0;
@@ -129,20 +128,21 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
     }
 
     // check negative cycles
-    has_change = false;
-    for (int u = 0; u < n; u++) {
-        #pragma omp parallel for reduction(| : has_change)
-        for (int v = 0; v < n; v++) {
-            int weight = weights[u * n + v];
-            if (weight < INT_MAX) {
-                // if we can relax one more step, then we find a negative cycle
-                if (distance[u] + weight < distance[v]) { 
-                    has_change = true;
+    if (iter_num == n - 1) {
+        has_change = false;
+        for (int u = 0; u < n; u++) {
+            #pragma omp parallel for reduction(| : has_change)
+            for (int v = 0; v < n; v++) {
+                int weight = weights[u * n + v];
+                if (weight < INT_MAX) {
+                    if (distance[u] + weight < distance[v]) { // if we can relax one more step, then we find a negative cycle
+                        has_change = true;
+                    }
                 }
             }
         }
+        *has_negative_cycle = has_change;
     }
-    *has_negative_cycle = has_change;
 
     free(weights);
 }
@@ -154,11 +154,11 @@ int main(int argc, char **argv) {
 
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
+
     read_file("data/london_temporal_at_23.csv", weights);
 
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
-
     double tstart, tend;
 
     // recored the execution time
@@ -174,6 +174,6 @@ int main(int argc, char **argv) {
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
-    save_results(distance, false);
+    // save_results(distance, false);
     return 0;
 }
