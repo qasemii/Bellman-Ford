@@ -65,7 +65,7 @@ int* read_file(const char* filename) {
     return mat;
 }
 
-void save(bool has_negative_cycle, int *dist) {
+void save_results(bool has_negative_cycle, int *dist) {
     FILE *outputf = fopen("cuda_output.txt", "w");
     if (!has_negative_cycle) {
         for (int i = 0; i < VERTICES; i++) {
@@ -150,7 +150,7 @@ void bellman_ford(int blocksPerGrid, int threadsPerBlock, int n, int *mat, int *
 
 int main(int argc, char **argv) {
     if (argc <= 2) {
-        abort_with_error_message("blocksPerGrid or threadsPerBlock WAS NOT FOUND!");
+        abort_with_error_message("blocksPerGrid or threadsPerBlock is not defined!");
     }
     int blockPerGrid = atoi(argv[1]);
     int threadsPerBlock = atoi(argv[2]);
@@ -158,8 +158,7 @@ int main(int argc, char **argv) {
     bool has_negative_cycle = false;
     
     int* mat = read_file("data/london_temporal_at_23.csv");
-    int dist[VERTICES];
-    memset(dist, 0, sizeof(dist));
+    int* dist = (int*)malloc(VERTICES * sizeof(int));
 
     // time counter
     double tstart, tend;
@@ -176,6 +175,6 @@ int main(int argc, char **argv) {
     printf("threadsPerBlock:\t%d\n", threadsPerBlock);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
-    save(has_negative_cycle, dist);
+    save_results(has_negative_cycle, dist);
     return 0;
 }
