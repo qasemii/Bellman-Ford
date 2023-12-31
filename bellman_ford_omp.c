@@ -64,10 +64,9 @@ void save_results(int *dist, bool has_negative_cycle) {
     fclose(outputf);
 }
 
-void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
+void BellmanFord(int* weights, int* distance, int start, int n, int n_threads, bool* has_negative_cycle) {
 
     int local_start[n_threads], local_end[n_threads];
-    bool *has_negative_cycle = false;
     
     //find local task range
     int ave = n / n_threads;
@@ -159,11 +158,13 @@ int main(int argc, char **argv) {
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
+    bool has_negative_cycle = false;
+
     double tstart, tend;
 
     // recored the execution time
     tstart = omp_get_wtime();
-    BellmanFord(weights, distance, 0, VERTICES, n_threads);
+    BellmanFord(weights, distance, 0, VERTICES, n_threads, &has_negative_cycle);
     tend = omp_get_wtime();
 
     printf("Network Specifications----------\n");
@@ -174,6 +175,6 @@ int main(int argc, char **argv) {
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance, false);
-    
+
     return 0;
 }
