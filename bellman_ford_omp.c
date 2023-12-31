@@ -144,7 +144,7 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
     }
     *has_negative_cycle = has_change;
 
-    free(mat);
+    free(weights);
 }
 
 int main(int argc, char **argv) {
@@ -174,6 +174,6 @@ int main(int argc, char **argv) {
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
-    save_results(false, dist);
+    save_results(false, distance);
     return 0;
 }
