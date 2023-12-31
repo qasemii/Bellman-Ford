@@ -11,10 +11,7 @@
 
 
 #define NUM_THREADS 1
-#define MAX_FIELD_SIZE 1024
 #define VERTICES 983
-#define MAX 983
-#define INFINITY 9999
 #define INF 1000000
 
 
@@ -55,7 +52,7 @@ float* Dijkstra(float** Graph, int n, int start) {
     for (i = 0; i < n; i++) {
         for (j = 0; j < n; j++) {
             if (Graph[i][j] == 0)
-                cost[i][j] = INFINITY;
+                cost[i][j] = INF;
             else
                 cost[i][j] = Graph[i][j];
         }
@@ -73,8 +70,8 @@ float* Dijkstra(float** Graph, int n, int start) {
     count = 1;
 
     while (count < n - 1) {
-        mindistance = INFINITY;
-        int local_mindistance = INFINITY;
+        mindistance = INF;
+        int local_mindistance = INF;
         int local_nextnode = 0;
 
         #pragma omp parallel for num_threads(NUM_THREADS)
@@ -150,7 +147,7 @@ int* BellmanFord(int** Graph, int n, int start) {
 
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
-        dist[i] = INFINITY;
+        dist[i] = INF;
     }
     // root vertex always has distance 0
     dist[0] = 0;
@@ -185,7 +182,7 @@ int* BellmanFord(int** Graph, int n, int start) {
             for (int u = 0; u < n; u++) {
                 for (int v = local_start[my_rank]; v < local_end[my_rank]; v++) {
                     int weight = cost[u][v];
-                    if (weight < INFINITY) {
+                    if (weight < INF) {
                         int new_dis = dist[u] + weight;
                         if (new_dis < dist[v]) {
                             local_has_change[my_rank] = true;
@@ -217,10 +214,9 @@ int* BellmanFord(int** Graph, int n, int start) {
             #pragma omp parallel for reduction(| : has_change)
             for (int v = 0; v < n; v++) {
                 int weight = cost[u][v];
-                if (weight < INFINITY) {
+                if (weight < INF) {
                     if (dist[u] + weight < dist[v]) { // if we can relax one more step, then we find a negative cycle
                         has_change = true;
-                        ;
                     }
                 }
             }
@@ -248,7 +244,7 @@ int main() {
     for (int i = 0; i < VERTICES; i++){
         for (int j = 0; j < VERTICES; j++){
             if (i != j){
-                matrix[i][j] = INFINITY; 
+                matrix[i][j] = INF; 
             }else{
                 matrix[i][j] = 0;
             }
@@ -330,7 +326,7 @@ int main() {
     printf("Network Specifications----------\n");
     printf("Number of nodes:\t%d\n", VERTICES);
     printf("Number of edges:\t%d\n\n", n_edges);
-    
+
     printf("OpenMP Specifications-----------\n");
     printf("Number of THREADS:\t%d\n", NUM_THREADS);
     printf("Execution time:\t\t%.6f sec\n\n", end-start);
