@@ -7,17 +7,17 @@
 
 #define INF 1000000
 
-#define CHECK(call)                                                           \
-    {                                                                         \
-        const cudaError_t error = call;                                       \
-        if (error != cudaSuccess)                                             \
-        {                                                                     \
-            fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);            \
-            fprintf(stderr, "code: %d, reason: %s\n", error,                  \
-                    cudaGetErrorString(error));                               \
-            exit(1);                                                          \
-        }                                                                     \
-    }
+// #define CHECK(call)                                                           \
+//     {                                                                         \
+//         const cudaError_t error = call;                                       \
+//         if (error != cudaSuccess)                                             \
+//         {                                                                     \
+//             fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);            \
+//             fprintf(stderr, "code: %d, reason: %s\n", error,                  \
+//                     cudaGetErrorString(error));                               \
+//             exit(1);                                                          \
+//         }                                                                     \
+//     }
 
 #define VERTICES 983
 int mat[VERTICES * VERTICES]; // the adjacency matrix
@@ -25,11 +25,6 @@ int mat[VERTICES * VERTICES]; // the adjacency matrix
 void abort_with_error_message(const char *msg) {
     fprintf(stderr, "%s\n", msg);
     exit(1);
-}
-
-// translate 2-dimension coordinate to 1-dimension
-int convert_dimension_2D_1D(int x, int y, int n) {
-    return x * n + y;
 }
 
 int read_file(const char *filename) {
@@ -76,12 +71,12 @@ int read_file(const char *filename) {
 }
 
 void print_result(bool has_negative_cycle, int *dist) {
-    FILE *outputf = fopen("output.txt", "w");
+    FILE *outputf = fopen("cuda_output.txt", "w");
     if (!has_negative_cycle) {
         for (int i = 0; i < VERTICES; i++) {
             if (dist[i] > INF)
                 dist[i] = INF;
-            printf("%d\n", dist[i]);
+            fprintf("%d\n", dist[i]);
         }
         fflush(outputf);
     } else {
@@ -137,7 +132,7 @@ void bellman_ford(int blocksPerGrid, int threadsPerBlock, int n, int *mat, int *
         cudaMemcpy(d_has_next, &h_has_next, sizeof(bool), cudaMemcpyHostToDevice);
 
         bellman_ford_one_iter<<<blocks, threads>>>(n, d_mat, d_dist, d_has_next, iter_num);
-        CHECK(cudaDeviceSynchronize());
+        cudaDeviceSynchronize();
         cudaMemcpy(&h_has_next, d_has_next, sizeof(bool), cudaMemcpyDeviceToHost);
 
         iter_num++;
@@ -183,14 +178,21 @@ int main(int argc, char **argv) {
     gettimeofday(&start_wall_time_t, NULL);
     // bellman-ford algorithm
     bellman_ford(blockPerGrid, threadsPerBlock, VERTICES, mat, dist, &has_negative_cycle);
-    CHECK(cudaDeviceSynchronize());
+    cudaDeviceSynchronize();
     // end timer
     gettimeofday(&end_wall_time_t, NULL);
     ms_wall = ((end_wall_time_t.tv_sec - start_wall_time_t.tv_sec) * 1000 * 1000 +
                end_wall_time_t.tv_usec - start_wall_time_t.tv_usec) / 1000.0;
 
-    printf("Time(s): %f\n", (ms_wall / 1000.0));
-    // print_result(has_negative_cycle, dist);
+    
+    printf("Network Specifications----------\n");
+    printf("Number of nodes:\t%d\n", VERTICES);
+    printf("Number of edges:\t%d\n", n_edges);
+    printf("OpenMP Specifications-----------\n");
+    printf('Number of THREADS:\t%d\n', NUM_THREADS);
+    printf("Exe time:\t%.6f sec\n", (ms_wall / 1000.0));
+    printf("--------------------------------\n");
+    print_result(has_negative_cycle, dist);
 
     return 0;
 }

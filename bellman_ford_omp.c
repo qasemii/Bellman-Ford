@@ -234,15 +234,12 @@ float* BellmanFord(float** Graph, int n, int start) {
 
 int main() {
     char line[256];
-    int max_src_id = VERTICES;
-    int max_dest_id = VERTICES;
     double start, end;
 
-
     // Allocate memory for the matrix dynamically
-    float** matrix = (float**)malloc(VERTICES * sizeof(float*));
+    int** matrix = (int**)malloc(VERTICES * sizeof(int*));
     for (int i = 0; i < VERTICES; i++) {
-        matrix[i] = (float*)malloc(VERTICES * sizeof(float));
+        matrix[i] = (int*)malloc(VERTICES * sizeof(int));
     }
 
     // Initial the matrix with INFINITY for when there is no direct connection
@@ -267,7 +264,6 @@ int main() {
     // Read each line in the CSV file and update the matrix
     int n_edges = 0;
     while (fgets(line, sizeof(line), file)) {
-        char* field;
         char* token;
         char* rest = line;
         int src_id, dest_id;
@@ -294,7 +290,7 @@ int main() {
     // Close the file
     fclose(file);
 
-    float* distance = (float*)malloc(VERTICES * sizeof(float));
+    int* distance = (int*)malloc(VERTICES * sizeof(int));
     start = omp_get_wtime();
 
     // all nodes to the others
@@ -321,11 +317,11 @@ int main() {
     distance = BellmanFord(matrix, VERTICES, 0);
     end = omp_get_wtime();
     
-    // Printing the distance
-    for (int i = 0; i < VERTICES; i++)
-        if (i != start) {
-            printf("\nDistance from %d to %d: %.3f", 0, i, distance[i]);
-        }
+    // // Printing the distance
+    // for (int i = 0; i < VERTICES; i++)
+    //     if (i != start) {
+    //         printf("\nDistance from %d to %d: %d", 0, i, distance[i]);
+    //     }
 
     free(distance);
     free(matrix);
