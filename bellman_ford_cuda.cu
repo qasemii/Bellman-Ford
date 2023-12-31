@@ -154,7 +154,9 @@ int main(int argc, char **argv) {
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
-    bool* has_negative_cycle = false;
+    bool* has_negative_cycle = (int*)malloc(VERTICES * sizeof(bool));
+    has_negative_cycle = false;
+    
     double tstart, tend;
 
     // recored the execution time
@@ -165,7 +167,7 @@ int main(int argc, char **argv) {
     tend = gettime();
 
     printf("CUDA Specifications-------------\n");
-    printf("blockPerGrid:\t\t%d\n", blockPerGrid);
+    printf("blockPerGrid:\t\t%d\n", blocksPerGrid);
     printf("threadsPerBlock:\t%d\n", threadsPerBlock);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
