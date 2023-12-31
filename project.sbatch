@@ -10,10 +10,10 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 
-nvcc cuda_bellman_ford.cu -o cuda_bellman_ford
-gcc -fopenmp bellman_ford_omp.c -o bellman_ford_omp
-gcc compare_omp_cuda.c -o compare_omp_cuda
+!gcc -fopenmp bellman_ford_omp.c -o bellman_ford_omp
+!nvcc bellman_ford_cuda.cu -o bellman_ford_cuda
+!gcc compare_omp_cuda.c -o compare_omp_cuda
 
-./cuda_bellman_ford london_temporal_at_23.csv 256 1
-./bellman_ford_omp
-./compare_omp_cuda
+!./bellman_ford_omp 1
+!./bellman_ford_cuda 128 1
+!./compare_omp_cuda
