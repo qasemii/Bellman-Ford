@@ -154,15 +154,14 @@ int main(int argc, char **argv) {
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
-    bool* has_negative_cycle = (bool*)malloc(sizeof(bool));
-    has_negative_cycle = false;
+    bool has_negative_cycle = false;
 
     double tstart, tend;
 
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford(weights, distance, 0, VERTICES, blocksPerGrid, threadsPerBlock, has_negative_cycle);
+    bellman_ford(weights, distance, 0, VERTICES, blocksPerGrid, threadsPerBlock, &has_negative_cycle);
     cudaDeviceSynchronize();
     tend = gettime();
 
