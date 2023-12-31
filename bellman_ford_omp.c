@@ -202,9 +202,5 @@ int main(int argc, char **argv) {
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(false, dist);
-
-
-    free(dist);
-    free(mat);
     return 0;
 }
