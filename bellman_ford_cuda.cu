@@ -3,27 +3,34 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <assert.h>
-#include <sys/time.h>
+#include <time.h>
+// #include "hpc.h"
 
 #define INF 1000000
 #define VERTICES 983
 
-int mat[VERTICES * VERTICES]; // the adjacency matrix
+double gettime(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts );
+    return (ts.tv_sec + (double)ts.tv_nsec / 1e9);
+}
 
 void abort_with_error_message(const char *msg) {
     fprintf(stderr, "%s\n", msg);
     exit(1);
 }
 
-int read_file(const char *filename) {
+int* read_file(const char* filename) {
     char line[256];
+    int* mat = (int*)malloc(VERTICES * VERTICES * sizeof(int));
 
-    // Initial the matrix with INFINITY 
-    for (int i = 0; i < VERTICES; i++){
-        for (int j = 0; j < VERTICES; j++){
-            if (i != j){
-                mat[i * VERTICES + j] = INF; 
-            }else{
+    // Initialize the matrix with INFINITY
+    for (int i = 0; i < VERTICES; i++) {
+        for (int j = 0; j < VERTICES; j++) {
+            if (i != j) {
+                mat[i * VERTICES + j] = INF;
+            } else {
                 mat[i * VERTICES + j] = 0;
             }
         }
@@ -42,23 +49,23 @@ int read_file(const char *filename) {
         // Tokenize the line based on the comma delimiter
         token = strtok_r(rest, ",", &rest);
         src_id = atoi(token);
-        
+
         token = strtok_r(rest, ",", &rest);
         dest_id = atoi(token);
-        
+
         token = strtok_r(rest, ",", &rest);
-        distance = atoi(token);
-        
+        distance = atof(token);
+
         // Update the matrix with the distance value
         if (src_id < VERTICES && dest_id < VERTICES) {
             mat[src_id * VERTICES + dest_id] = distance;
-        }  
-        // printf("element: %d\n", mat[src_id * VERTICES + dest_id]);
+        }
     }
-    return 0;
+    fclose(file);
+    return mat;
 }
 
-void print_result(bool has_negative_cycle, int *dist) {
+void save(bool has_negative_cycle, int *dist) {
     FILE *outputf = fopen("cuda_output.txt", "w");
     if (!has_negative_cycle) {
         for (int i = 0; i < VERTICES; i++) {
@@ -142,47 +149,33 @@ void bellman_ford(int blocksPerGrid, int threadsPerBlock, int n, int *mat, int *
 }
 
 int main(int argc, char **argv) {
-    if (argc <= 1) {
-        abort_with_error_message("INPUT FILE WAS NOT FOUND!");
-    }
-    if (argc <= 3) {
+    if (argc <= 2) {
         abort_with_error_message("blocksPerGrid or threadsPerBlock WAS NOT FOUND!");
     }
-    const char *filename = argv[1];
-    int blockPerGrid = atoi(argv[2]);
-    int threadsPerBlock = atoi(argv[3]);
-
-    int dist[VERTICES];
+    int blockPerGrid = atoi(argv[1]);
+    int threadsPerBlock = atoi(argv[2]);
+    
     bool has_negative_cycle = false;
     
-    read_file(filename);
+    int* mat = read_file("data/london_temporal_at_23.csv");
+    int dist[VERTICES];
     memset(dist, 0, sizeof(dist));
 
     // time counter
-    timeval start_wall_time_t, end_wall_time_t;
-    float ms_wall;
+    double tstart, tend;
+
     cudaDeviceReset();
-    // start timer
-    gettimeofday(&start_wall_time_t, NULL);
-    // bellman-ford algorithm
+
+    tstart = gettime();
     bellman_ford(blockPerGrid, threadsPerBlock, VERTICES, mat, dist, &has_negative_cycle);
     cudaDeviceSynchronize();
-    // end timer
-    gettimeofday(&end_wall_time_t, NULL);
-    ms_wall = ((end_wall_time_t.tv_sec - start_wall_time_t.tv_sec) * 1000 * 1000 +
-               end_wall_time_t.tv_usec - start_wall_time_t.tv_usec) / 1000.0;
+    tend = gettime();
 
-    
-    // printf("Network Specifications----------\n");
-    // printf("Number of nodes:\t%d\n", VERTICES);
-    // printf("Number of edges:\t%d\n", n_edges);
     printf("CUDA Specifications-------------\n");
     printf("blockPerGrid:\t\t%d\n", blockPerGrid);
     printf("threadsPerBlock:\t%d\n", threadsPerBlock);
-    printf("Exection time:\t\t%.6f sec\n\n", (ms_wall / 1000.0));
+    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
-    // printf("--------------------------------\n");
-    print_result(has_negative_cycle, dist);
-
+    save(has_negative_cycle, dist);
     return 0;
 }
