@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "algorithms.h": "c"
+        "algorithms.h": "c",
+        "sort.h": "c",
+        "config.h": "c"
     }
 }

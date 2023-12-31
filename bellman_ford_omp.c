@@ -5,10 +5,32 @@
 #include <stdbool.h>
 #include <omp.h>
 #include <limits.h>
-#include "../inc/algorithms.h"
-#include "../inc/config.h"
+// #include "inc/algorithms.h"
+// #include "inc/sort.h"
+// #include "inc/config.h"
 
 
+#define NUM_THREADS 1
+#define MAX_FIELD_SIZE 1024
+#define VERTICES 983
+#define MAX 983
+#define INFINITY 9999
+
+
+void print_result(bool has_negative_cycle, int *dist) {
+    FILE *outputf = fopen("omp_output.txt", "w");
+    if (!has_negative_cycle) {
+        for (int i = 0; i < VERTICES; i++) {
+            if (dist[i] > INF)
+                dist[i] = INF;
+            fprintf("%d\n", dist[i]);
+        }
+        fflush(outputf);
+    } else {
+        printf("FOUND NEGATIVE CYCLE!\n");
+    }
+    fclose(outputf);
+}
 
 float* Dijkstra(float** Graph, int n, int start) {
     float** cost;
@@ -101,12 +123,6 @@ float* Dijkstra(float** Graph, int n, int start) {
     return distance;
 }
 
-/**
- * Bellman-Ford algorithm. Find the shortest path from vertex 0 to other vertices.
- * @param Graph input Graph (nodes and edges)
- * @param n number of nodes
- * @param start initial node
-*/
 float* BellmanFord(float** Graph, int n, int start) {
     float** cost;
     float* dist;
@@ -214,4 +230,113 @@ float* BellmanFord(float** Graph, int n, int start) {
     // step 4: free memory (if any)
     free(cost);
     return dist;
+}
+
+int main() {
+    char line[256];
+    int max_src_id = VERTICES;
+    int max_dest_id = VERTICES;
+    double start, end;
+
+
+    // Allocate memory for the matrix dynamically
+    float** matrix = (float**)malloc(VERTICES * sizeof(float*));
+    for (int i = 0; i < VERTICES; i++) {
+        matrix[i] = (float*)malloc(VERTICES * sizeof(float));
+    }
+
+    // Initial the matrix with INFINITY for when there is no direct connection
+    // We also set the diagonal elements to 0
+    for (int i = 0; i < VERTICES; i++){
+        for (int j = 0; j < VERTICES; j++){
+            if (i != j){
+                matrix[i][j] = INFINITY; 
+            }else{
+                matrix[i][j] = 0;
+            }
+        }
+    }
+
+    // Open the CSV file
+    FILE* file = fopen("data/london_temporal_at_23.csv", "r");
+    if (file == NULL) {
+        printf("Failed to open the CSV file.\n");
+        return 1;
+    }
+
+    // Read each line in the CSV file and update the matrix
+    int n_edges = 0;
+    while (fgets(line, sizeof(line), file)) {
+        char* field;
+        char* token;
+        char* rest = line;
+        int src_id, dest_id;
+        float distance;
+
+        // Tokenize the line based on the comma delimiter
+        token = strtok_r(rest, ",", &rest);
+        src_id = atoi(token);
+        
+        token = strtok_r(rest, ",", &rest);
+        dest_id = atoi(token);
+        
+        token = strtok_r(rest, ",", &rest);
+        distance = atof(token);
+        
+        // Update the matrix with the distance value
+        if (src_id < VERTICES && dest_id < VERTICES) {
+            n_edges++;
+            matrix[src_id][dest_id] = distance;
+        }    
+        
+    }
+
+    // Close the file
+    fclose(file);
+
+    float* distance = (float*)malloc(VERTICES * sizeof(float));
+    start = omp_get_wtime();
+
+    // all nodes to the others
+    
+    // // #pragma omp parallel num_threads(NUM_THREADS) private(distance)
+    // for (int u = 0; u < VERTICES; u++){
+    //     // int u = 0;
+    //     distance = BellmanFord(matrix, VERTICES, u);
+    //     merge_sort(distance, 0, VERTICES-1);
+    //     // Printing the distance
+    //     for (int i = 0; i < VERTICES; i++)
+    //         if (i != start) {
+    //             printf("\nDistance from %d to %d: %.3f", u, i, distance[i]);
+    //         }
+    //     free(distance);
+    // }
+    // // Free dynamically allocated memory for the Graph
+    // for (int i = 0; i < VERTICES; i++) {
+    //     free(matrix[i]);
+    // }
+
+    // one node to the others
+
+    distance = BellmanFord(matrix, VERTICES, 0);
+    end = omp_get_wtime();
+    
+    // Printing the distance
+    for (int i = 0; i < VERTICES; i++)
+        if (i != start) {
+            printf("\nDistance from %d to %d: %.3f", 0, i, distance[i]);
+        }
+
+    free(distance);
+    free(matrix);
+
+    printf("Network Specifications----------\n");
+    printf("Number of nodes:\t%d\n", VERTICES);
+    printf("Number of edges:\t%d\n", n_edges);
+    printf("OpenMP Specifications-----------\n");
+    printf('Number of THREADS:\t%d\n', NUM_THREADS)
+    printf("Exe time:\t%.6f sec\n", end-start);
+    printf("--------------------------------\n");
+    print_result(false, int *dist)
+    return 0;
 }
