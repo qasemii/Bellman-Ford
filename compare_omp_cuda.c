@@ -2,6 +2,17 @@
 
 #include <stdio.h>
 
+
+void save_report() {
+    FILE* report_file = fopen("report.txt", "a");
+
+    if (report_file == NULL) {
+        // File doesn't exist, create and write header
+        report_file = fopen("report.txt", "w");
+    }
+    fclose(report_file);
+}
+
 int main() {
     FILE *file1, *file2;
     char line1[100], line2[100];
@@ -39,7 +50,7 @@ int main() {
         }
         lineNumber++;
     }
-    printf("Total mismatch answers:\t%d\n", mismatch);
+    printf("Total mismatch answers:\t%d\n\n", mismatch);
     printf("--------------------------------\n");
 
     fclose(file1);

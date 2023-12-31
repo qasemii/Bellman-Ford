@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=buda
-#SBATCH --output=buda.out
-#SBATCH --error=buda.err
+#SBATCH --job-name=B
+#SBATCH --output=report.out
+#SBATCH --error=error.err
 
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=mohammadreza.ghasemi@unibo.it
@@ -10,10 +10,12 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --gres=gpu:1
 
-!gcc -fopenmp bellman_ford_omp.c -o bellman_ford_omp
-!nvcc bellman_ford_cuda.cu -o bellman_ford_cuda
-!gcc compare_omp_cuda.c -o compare_omp_cuda
+gcc -fopenmp bellman_ford_omp.c -o bellman_ford_omp
+nvcc bellman_ford_cuda.cu -o bellman_ford_cuda
+gcc compare_omp_cuda.c -o compare_omp_cuda
 
-!./bellman_ford_omp 1
-!./bellman_ford_cuda 128 1
-!./compare_omp_cuda
+./bellman_ford_omp 1
+
+./bellman_ford_cuda 128 1
+
+./compare_omp_cuda
