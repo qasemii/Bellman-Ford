@@ -80,7 +80,7 @@ void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
     for (int i = 0; i < n; i++) {
         distance[i] = INT_MAX;
     }
-    distance[0] = 0;
+    distance[start] = 0;
 
     #pragma omp parallel for
     for (int i = 0; i < n_threads; i++) {
@@ -154,11 +154,11 @@ int main(int argc, char **argv) {
 
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
-
     read_file("data/london_temporal_at_23.csv", weights);
 
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
+
     double tstart, tend;
 
     // recored the execution time
@@ -169,11 +169,11 @@ int main(int argc, char **argv) {
     printf("Network Specifications----------\n");
     printf("Number of nodes:\t%d\n", VERTICES);
     // printf("Number of edges:\t%d\n\n", n_edges);
-
     printf("OpenMP Specifications-----------\n");
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
-    // save_results(distance, false);
+    save_results(distance, false);
+    
     return 0;
 }
