@@ -7,24 +7,16 @@
 
 
 #define VERTICES 983
-#define INF 1000000
 
-void abort_with_error_message(const char *msg) {
-    fprintf(stderr, "%s\n", msg);
-    exit(1);
-}
 
-int* read_file(const char* filename) {
-    char line[256];
-    int* mat = (int*)malloc(VERTICES * VERTICES * sizeof(int));
-
-    // Initialize the matrix with INFINITY
+void read_file(const char* filename, int* weights) {
+    // Initialize the matrix with INT_MAX and 0 for diagonals
     for (int i = 0; i < VERTICES; i++) {
         for (int j = 0; j < VERTICES; j++) {
             if (i != j) {
-                mat[i * VERTICES + j] = INF;
+                weights[i * VERTICES + j] = INT_MAX;
             } else {
-                mat[i * VERTICES + j] = 0;
+                weights[i * VERTICES + j] = 0;
             }
         }
     }
@@ -33,11 +25,11 @@ int* read_file(const char* filename) {
     FILE* file = fopen(filename, "r");
 
     // Read each line in the CSV file and update the matrix
+    char line[256];
     while (fgets(line, sizeof(line), file)) {
         char* token;
         char* rest = line;
-        int src_id, dest_id;
-        float distance;
+        int src_id, dest_id, distance;
 
         // Tokenize the line based on the comma delimiter
         token = strtok_r(rest, ",", &rest);
@@ -47,60 +39,56 @@ int* read_file(const char* filename) {
         dest_id = atoi(token);
 
         token = strtok_r(rest, ",", &rest);
-        distance = atof(token);
+        distance = atoi(token);
 
         // Update the matrix with the distance value
         if (src_id < VERTICES && dest_id < VERTICES) {
-            mat[src_id * VERTICES + dest_id] = distance;
+            weights[src_id * VERTICES + dest_id] = distance;
         }
     }
     fclose(file);
-    return mat;
 }
 
-void save_results(bool has_negative_cycle, int *dist) {
+void save_results(int *dist, bool has_negative_cycle) {
     FILE *outputf = fopen("omp_output.txt", "w");
     if (!has_negative_cycle) {
         for (int i = 0; i < VERTICES; i++) {
-            if (dist[i] > INF)
-                dist[i] = INF;
+            if (dist[i] > INT_MAX)
+                dist[i] = INT_MAX;
             fprintf(outputf, "%d\n", dist[i]);
         }
         fflush(outputf);
     } else {
-        printf("FOUND NEGATIVE CYCLE!\n");
+        fprintf(outputf, "Negative cycle detected!\n");
     }
     fclose(outputf);
 }
 
-// (int p, int n, int *mat, int *dist, bool *has_negative_cycle)
-void BellmanFord(int n_threads, int* mat, int n, int start, int* dist) {
-
-    #pragma omp parallel for
-    for (int i = 0; i < n; i++) {
-        dist[i] = INF;
-    }
-    // root vertex always has distance 0
-    dist[0] = 0;
-
+void BellmanFord(int* weights, int* distance, int start, int n, int n_threads) {
 
     int local_start[n_threads], local_end[n_threads];
     bool *has_negative_cycle = false;
-
-    // step 1: set openmp thread number
-    omp_set_num_threads(n_threads);
-
-    // step 2: find local task range
+    
+    //find local task range
     int ave = n / n_threads;
     
+    //set openmp thread number
+    omp_set_num_threads(n_threads);
+
+    // initializing the distance array
     #pragma omp parallel for
-    for (int i = 0; i < n_threads; i++) {
+    for (int i = 0; i < n; i++) {
+        distance[i] = INT_MAX;
+    }
+    distance[0] = 0;
+
+    #pragma omp parallel for
+    for (int i = 0; i < n_threads-1; i++) {
         local_start[i] = ave * i;
         local_end[i] = ave * (i + 1);
-        if (i == n_threads - 1) {
-            local_end[i] = n;
-        }
     }
+    local_start[n_threads-1] = ave * (n_threads-1);
+    local_end[n_threads-1] = n;
 
     int iter_num = 0;
     bool has_change;
@@ -108,22 +96,24 @@ void BellmanFord(int n_threads, int* mat, int n, int start, int* dist) {
     #pragma omp parallel
     {
         int my_rank = omp_get_thread_num();
-        // bellman-ford algorithm
         for (int iter = 0; iter < n - 1; iter++) {
             local_has_change[my_rank] = false;
             for (int u = 0; u < n; u++) {
                 for (int v = local_start[my_rank]; v < local_end[my_rank]; v++) {
-                    int weight = mat[u * n + v];
-                    if (weight < INF) {
-                        int new_dis = dist[u] + weight;
-                        if (new_dis < dist[v]) {
+                    int weight = weights[u * n + v];
+                    if (weight < INT_MAX) {
+                        int new_dis = distance[u] + weight;
+                        if (new_dis < distance[v]) {
                             local_has_change[my_rank] = true;
-                            dist[v] = new_dis;
+                            distance[v] = new_dis;
                         }
                     }
                 }
             }
+            // wait for all threads to finish
             #pragma omp barrier
+
+            // single thread execution
             #pragma omp single
             {
                 iter_num++;
@@ -138,59 +128,42 @@ void BellmanFord(int n_threads, int* mat, int n, int start, int* dist) {
         }
     }
 
-    // do one more iteration to check negative cycles
-    if (iter_num == n - 1) {
-        has_change = false;
-        for (int u = 0; u < n; u++) {
-            #pragma omp parallel for reduction(| : has_change)
-            for (int v = 0; v < n; v++) {
-                int weight = mat[u * n + v];
-                if (weight < INF) {
-                    if (dist[u] + weight < dist[v]) { // if we can relax one more step, then we find a negative cycle
-                        has_change = true;
-                    }
+    // check negative cycles
+    has_change = false;
+    for (int u = 0; u < n; u++) {
+        #pragma omp parallel for reduction(| : has_change)
+        for (int v = 0; v < n; v++) {
+            int weight = mat[u * n + v];
+            if (weight < INT_MAX) {
+                // if we can relax one more step, then we find a negative cycle
+                if (distance[u] + weight < distance[v]) { 
+                    has_change = true;
                 }
             }
         }
-        *has_negative_cycle = has_change;
     }
+    *has_negative_cycle = has_change;
 
-    // step 4: free memory (if any)
     free(mat);
 }
 
 int main(int argc, char **argv) {
-    if (argc <= 1) {
-        abort_with_error_message("N_THREADS is not defined");
-    }
-    int N_THREADS = atoi(argv[1]);
+    int n_threads = atoi(argv[1]);
+    // make sure we pass number of threads (N_THREADS)
+    assert(n_threads != NULL);
 
-    int* mat = read_file("data/london_temporal_at_23.csv");
-    int* dist = (int*)malloc(VERTICES * sizeof(int));
+    // reading the adjacency matrix
+    int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
+    read_file("data/london_temporal_at_23.csv", weights);
+
+    // initializing distance array
+    int* distance = (int*)malloc(VERTICES * sizeof(int));
 
     double tstart, tend;
+
+    // recored the execution time
     tstart = omp_get_wtime();
-
-    // all nodes to the others =====================================
-    // // #pragma omp parallel num_threads(NUM_THREADS) private(distance)
-    // for (int u = 0; u < VERTICES; u++){
-    //     // int u = 0;
-    //     distance = BellmanFord(matrix, VERTICES, u);
-    //     merge_sort(distance, 0, VERTICES-1);
-    //     // Printing the distance
-    //     for (int i = 0; i < VERTICES; i++)
-    //         if (i != start) {
-    //             printf("\nDistance from %d to %d: %.3f", u, i, distance[i]);
-    //         }
-    //     free(distance);
-    // }
-    // // Free dynamically allocated memory for the Graph
-    // for (int i = 0; i < VERTICES; i++) {
-    //     free(matrix[i]);
-    // }
-
-    // one node to the others =====================================
-    BellmanFord(N_THREADS, mat, VERTICES, 0, dist);
+    BellmanFord(weights, distance, 0, VERTICES, n_threads);
     tend = omp_get_wtime();
 
     printf("Network Specifications----------\n");
@@ -198,7 +171,7 @@ int main(int argc, char **argv) {
     // printf("Number of edges:\t%d\n\n", n_edges);
 
     printf("OpenMP Specifications-----------\n");
-    printf("Number of THREADS:\t%d\n", N_THREADS);
+    printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(false, dist);
