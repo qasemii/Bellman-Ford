@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
-    bool* has_negative_cycle = (bool*)malloc(VERTICES * sizeof(bool));
+    bool* has_negative_cycle = (bool*)malloc(sizeof(bool));
     has_negative_cycle = false;
 
     double tstart, tend;
