@@ -23,7 +23,7 @@ int main() {
         return 1;
     }
 
-    printf("Compare CUDA and OpenMP results-\n");
+    printf("CUDA vs OpenMP------------------\n");
     // Compare each line in the files
     while (fgets(line1, sizeof(line1), file1) && fgets(line2, sizeof(line2), file2)) {
         int num1, num2;
@@ -34,13 +34,13 @@ int main() {
 
         // Compare the numbers
         if (num1 != num2) {
-            printf("Mismatch answer at line\t%d\n", lineNumber);
+            printf("Mismatch  at line\t%d\n", lineNumber);
             mismatch++;
         }
 
         lineNumber++;
     }
-    printf("Total mismatch answers:\t%d", mismatch);
+    printf("Total mismatch answers:\t%d\n", mismatch);
     printf("--------------------------------\n");
 
     // Close the files

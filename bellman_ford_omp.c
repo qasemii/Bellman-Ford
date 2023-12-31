@@ -330,10 +330,11 @@ int main() {
     printf("Network Specifications----------\n");
     printf("Number of nodes:\t%d\n", VERTICES);
     printf("Number of edges:\t%d\n\n", n_edges);
+    
     printf("OpenMP Specifications-----------\n");
     printf("Number of THREADS:\t%d\n", NUM_THREADS);
-    printf("Execution time:\t\t%.6f sec\n", end-start);
+    printf("Execution time:\t\t%.6f sec\n\n", end-start);
     // printf("--------------------------------\n");
-    // print_result(false, distance);
+    print_result(false, distance);
     return 0;
 }

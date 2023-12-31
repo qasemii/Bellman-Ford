@@ -176,11 +176,13 @@ int main(int argc, char **argv) {
     // printf("Network Specifications----------\n");
     // printf("Number of nodes:\t%d\n", VERTICES);
     // printf("Number of edges:\t%d\n", n_edges);
-    // printf("OpenMP Specifications-----------\n");
-    // printf('Number of THREADS:\t%d\n', NUM_THREADS);
-    printf("Exe time:\t%.6f sec\n", (ms_wall / 1000.0));
-    printf("--------------------------------\n");
-    // print_result(has_negative_cycle, dist);
+    printf("CUDA Specifications-------------\n");
+    printf("blockPerGrid:\t\t%d\n", blockPerGrid);
+    printf("threadsPerBlock:\t%d\n", threadsPerBlock);
+    printf("Exection time:\t\t%.6f sec\n\n", (ms_wall / 1000.0));
+
+    // printf("--------------------------------\n");
+    print_result(has_negative_cycle, dist);
 
     return 0;
 }
