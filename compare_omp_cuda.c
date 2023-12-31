@@ -37,13 +37,11 @@ int main() {
             printf("Mismatch  at line\t%d\n", lineNumber);
             mismatch++;
         }
-
         lineNumber++;
     }
     printf("Total mismatch answers:\t%d\n", mismatch);
     printf("--------------------------------\n");
 
-    // Close the files
     fclose(file1);
     fclose(file2);
 
