@@ -15,6 +15,7 @@
 #define VERTICES 983
 #define MAX 983
 #define INFINITY 9999
+#define INF 1000000
 
 
 void print_result(bool has_negative_cycle, int *dist) {
@@ -23,7 +24,7 @@ void print_result(bool has_negative_cycle, int *dist) {
         for (int i = 0; i < VERTICES; i++) {
             if (dist[i] > INF)
                 dist[i] = INF;
-            fprintf("%d\n", dist[i]);
+            fprintf(outputf, "%d\n", dist[i]);
         }
         fflush(outputf);
     } else {
@@ -123,14 +124,14 @@ float* Dijkstra(float** Graph, int n, int start) {
     return distance;
 }
 
-float* BellmanFord(float** Graph, int n, int start) {
-    float** cost;
-    float* dist;
+int* BellmanFord(int** Graph, int n, int start) {
+    int** cost;
+    int* dist;
 
     // Allocate memory for the cost matrix and other arrays
-    cost = (float**)malloc(n * sizeof(float*));
+    cost = (int**)malloc(n * sizeof(int*));
     for (int i = 0; i < n; i++) {
-        cost[i] = (float*)malloc(n * sizeof(float));
+        cost[i] = (int*)malloc(n * sizeof(int));
     }
 
     // Creating cost matrix
@@ -138,14 +139,14 @@ float* BellmanFord(float** Graph, int n, int start) {
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
             if (Graph[i][j] == 0)
-                cost[i][j] = INFINITY;
+                cost[i][j] = INF;
             else
                 cost[i][j] = Graph[i][j];
         }
     }
 
     // step 3: initialize distances
-    dist = (float*)malloc(n * sizeof(float));
+    dist = (int*)malloc(n * sizeof(int));
 
     #pragma omp parallel for
     for (int i = 0; i < n; i++) {
@@ -328,11 +329,11 @@ int main() {
 
     printf("Network Specifications----------\n");
     printf("Number of nodes:\t%d\n", VERTICES);
-    printf("Number of edges:\t%d\n", n_edges);
+    printf("Number of edges:\t%d\n\n", n_edges);
     printf("OpenMP Specifications-----------\n");
-    printf('Number of THREADS:\t%d\n', NUM_THREADS)
-    printf("Exe time:\t%.6f sec\n", end-start);
-    printf("--------------------------------\n");
-    print_result(false, int *dist)
+    printf("Number of THREADS:\t%d\n", NUM_THREADS);
+    printf("Execution time:\t\t%.6f sec\n", end-start);
+    // printf("--------------------------------\n");
+    // print_result(false, distance);
     return 0;
 }

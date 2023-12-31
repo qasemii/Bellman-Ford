@@ -6,20 +6,8 @@
 #include <sys/time.h>
 
 #define INF 1000000
-
-// #define CHECK(call)                                                           \
-//     {                                                                         \
-//         const cudaError_t error = call;                                       \
-//         if (error != cudaSuccess)                                             \
-//         {                                                                     \
-//             fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);            \
-//             fprintf(stderr, "code: %d, reason: %s\n", error,                  \
-//                     cudaGetErrorString(error));                               \
-//             exit(1);                                                          \
-//         }                                                                     \
-//     }
-
 #define VERTICES 983
+
 int mat[VERTICES * VERTICES]; // the adjacency matrix
 
 void abort_with_error_message(const char *msg) {
@@ -76,7 +64,7 @@ void print_result(bool has_negative_cycle, int *dist) {
         for (int i = 0; i < VERTICES; i++) {
             if (dist[i] > INF)
                 dist[i] = INF;
-            fprintf("%d\n", dist[i]);
+            fprintf(outputf, "%d\n", dist[i]);
         }
         fflush(outputf);
     } else {
@@ -185,14 +173,14 @@ int main(int argc, char **argv) {
                end_wall_time_t.tv_usec - start_wall_time_t.tv_usec) / 1000.0;
 
     
-    printf("Network Specifications----------\n");
-    printf("Number of nodes:\t%d\n", VERTICES);
-    printf("Number of edges:\t%d\n", n_edges);
-    printf("OpenMP Specifications-----------\n");
-    printf('Number of THREADS:\t%d\n', NUM_THREADS);
+    // printf("Network Specifications----------\n");
+    // printf("Number of nodes:\t%d\n", VERTICES);
+    // printf("Number of edges:\t%d\n", n_edges);
+    // printf("OpenMP Specifications-----------\n");
+    // printf('Number of THREADS:\t%d\n', NUM_THREADS);
     printf("Exe time:\t%.6f sec\n", (ms_wall / 1000.0));
     printf("--------------------------------\n");
-    print_result(has_negative_cycle, dist);
+    // print_result(has_negative_cycle, dist);
 
     return 0;
 }
