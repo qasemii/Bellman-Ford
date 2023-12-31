@@ -144,7 +144,7 @@ void bellman_ford(int *weights, int *distance, int start, int n, int blocksPerGr
 int main(int argc, char **argv) {
     // make sure we pass blockPerGrid and threadsPerBlock
     assert(argv[1] != NULL && argv[2]!=NULL);
-    int blockPerGrid = atoi(argv[1]);
+    int blocksPerGrid = atoi(argv[1]);
     int threadsPerBlock = atoi(argv[2]);
     
     // reading the adjacency matrix
@@ -154,7 +154,7 @@ int main(int argc, char **argv) {
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
-    bool has_negative_cycle = false;
+    bool* has_negative_cycle = false;
     double tstart, tend;
 
     // recored the execution time
@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
     printf("threadsPerBlock:\t%d\n", threadsPerBlock);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
-    save_results(has_negative_cycle, dist);
+    save_results(distance, has_negative_cycle);
 
     return 0;
 }
