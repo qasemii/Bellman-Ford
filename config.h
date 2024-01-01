@@ -1,0 +1,2 @@
+#define INF 999999
+#define VERTICES 983

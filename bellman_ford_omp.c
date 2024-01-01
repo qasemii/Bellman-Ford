@@ -5,10 +5,7 @@
 #include <omp.h>
 #include <limits.h>
 #include <assert.h>
-
-
-#define INF 999999
-#define VERTICES 983
+#include "config.h"
 
 
 void read_file(const char* filename, int* weights, int* n_edges) {
