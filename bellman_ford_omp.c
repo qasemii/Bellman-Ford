@@ -28,7 +28,7 @@ void read_file(const char* filename, int* weights, int* n_edges) {
 
     // Read each line in the CSV file and update the matrix
     char line[256];
-    n_edges = 0;
+    *n_edges = 0;
     while (fgets(line, sizeof(line), file)) {
         char* token;
         char* rest = line;
@@ -46,7 +46,7 @@ void read_file(const char* filename, int* weights, int* n_edges) {
 
         // Update the matrix with the distance value
         if (src_id < VERTICES && dest_id < VERTICES) {
-            n_edges++;
+            (*n_edges)++;
             weights[src_id * VERTICES + dest_id] = distance;
         }
     }
