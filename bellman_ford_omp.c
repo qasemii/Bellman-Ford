@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
 
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
-    read_file("data/london_temporal_at_23.csv", weights, &n_edges);
+    read_file("data/USA-road-NY.csv", weights, &n_edges);
     // initializing distance array
     int* distance = (int*)malloc(VERTICES * sizeof(int));
 
