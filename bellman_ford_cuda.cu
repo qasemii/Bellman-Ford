@@ -7,7 +7,8 @@
 // #include "hpc.h"
 
 #define INF 999999
-#define VERTICES 983
+#define VERTICES 20000 //total vertices 264,346
+
 
 double gettime(void){
     struct timespec ts;

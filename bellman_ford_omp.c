@@ -5,7 +5,10 @@
 #include <omp.h>
 #include <limits.h>
 #include <assert.h>
-#include "config.h"
+
+
+#define INF 999999
+#define VERTICES 20000 //total vertices 264,346
 
 
 void read_file(const char* filename, int* weights, int* n_edges) {
