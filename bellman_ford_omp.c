@@ -93,20 +93,20 @@ void bellman_ford(int* weights, int* distance, int start, int n, int n_threads, 
     local_end[n_threads-1] = n;
 
     int iter_num = 0;
-    bool has_change;
-    bool local_has_change[n_threads];
+    bool changed;
+    bool local_changed[n_threads];
     #pragma omp parallel
     {
         int my_rank = omp_get_thread_num();
         for (int iter = 0; iter < n - 1; iter++) {
-            local_has_change[my_rank] = false;
+            local_changed[my_rank] = false;
             for (int u = 0; u < n; u++) {
                 for (int v = local_start[my_rank]; v < local_end[my_rank]; v++) {
                     int weight = weights[u * n + v];
                     if (weight < INF) {
                         int new_dis = distance[u] + weight;
                         if (new_dis < distance[v]) {
-                            local_has_change[my_rank] = true;
+                            local_changed[my_rank] = true;
                             distance[v] = new_dis;
                         }
                     }
@@ -119,12 +119,12 @@ void bellman_ford(int* weights, int* distance, int start, int n, int n_threads, 
             #pragma omp single
             {
                 iter_num++;
-                has_change = false;
+                changed = false;
                 for (int rank = 0; rank < n_threads; rank++) {
-                    has_change |= local_has_change[rank];
+                    changed |= local_changed[rank];
                 }
             }
-            if (!has_change) {
+            if (!changed) {
                 break;
             }
         }
@@ -132,19 +132,19 @@ void bellman_ford(int* weights, int* distance, int start, int n, int n_threads, 
 
     // check negative cycles
     if (iter_num == n - 1) {
-        has_change = false;
+        changed = false;
         for (int u = 0; u < n; u++) {
-            #pragma omp parallel for reduction(| : has_change)
+            #pragma omp parallel for reduction(| : changed)
             for (int v = 0; v < n; v++) {
                 int weight = weights[u * n + v];
                 if (weight < INF) {
                     if (distance[u] + weight < distance[v]) { // if we can relax one more step, then we find a negative cycle
-                        has_change = true;
+                        changed = true;
                     }
                 }
             }
         }
-        *has_negative_cycle = has_change;
+        *has_negative_cycle = changed;
     }
 
     free(weights);
