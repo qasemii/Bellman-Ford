@@ -8,7 +8,7 @@
 
 
 #define INF 999999
-#define VERTICES 20000 //total vertices 264,346
+#define VERTICES 10000 //total vertices 264,346
 
 
 void read_file(const char* filename, int* weights, int* n_edges) {
@@ -68,19 +68,19 @@ void save_results(int *dist, bool has_negative_cycle) {
     fclose(outputf);
 }
 
-void bellman_ford(int* weights, int* distance, int start, int n, int n_threads, bool* has_negative_cycle) {
+void bellman_ford(int* weights, int* distance, int start, int n_threads, bool* has_negative_cycle) {
 
     int local_start[n_threads], local_end[n_threads];
     
     //find local task range
-    int ave = n / n_threads;
+    int ave = VERTICES / n_threads;
     
     //set openmp thread number
     omp_set_num_threads(n_threads);
 
     // initializing the distance array
     #pragma omp parallel for
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < VERTICES; i++) {
         distance[i] = INF;
     }
     distance[start] = 0;
@@ -98,11 +98,11 @@ void bellman_ford(int* weights, int* distance, int start, int n, int n_threads, 
     #pragma omp parallel
     {
         int my_rank = omp_get_thread_num();
-        for (int iter = 0; iter < n - 1; iter++) {
+        for (int iter = 0; iter < VERTICES - 1; iter++) {
             local_changed[my_rank] = false;
-            for (int u = 0; u < n; u++) {
+            for (int u = 0; u < VERTICES; u++) {
                 for (int v = local_start[my_rank]; v < local_end[my_rank]; v++) {
-                    int weight = weights[u * n + v];
+                    int weight = weights[u * VERTICES + v];
                     if (weight < INF) {
                         int new_dis = distance[u] + weight;
                         if (new_dis < distance[v]) {
@@ -131,12 +131,12 @@ void bellman_ford(int* weights, int* distance, int start, int n, int n_threads, 
     }
 
     // check negative cycles
-    if (iter_num == n - 1) {
+    if (iter_num == VERTICES - 1) {
         changed = false;
-        for (int u = 0; u < n; u++) {
+        for (int u = 0; u < VERTICES; u++) {
             #pragma omp parallel for reduction(| : changed)
-            for (int v = 0; v < n; v++) {
-                int weight = weights[u * n + v];
+            for (int v = 0; v < VERTICES; v++) {
+                int weight = weights[u * VERTICES + v];
                 if (weight < INF) {
                     if (distance[u] + weight < distance[v]) { // if we can relax one more step, then we find a negative cycle
                         changed = true;
