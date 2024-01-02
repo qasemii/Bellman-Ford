@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
 
     // recored the execution time
     tstart = omp_get_wtime();
-    bellman_ford(weights, distance, 0, VERTICES, n_threads, &has_negative_cycle);
+    bellman_ford(weights, distance, 0, n_threads, &has_negative_cycle);
     tend = omp_get_wtime();
 
     printf("Network Specifications----------\n");
