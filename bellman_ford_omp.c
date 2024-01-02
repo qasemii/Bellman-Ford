@@ -90,7 +90,7 @@ void bellman_ford(int* weights, int* distance, int start, int n_threads, bool* h
         local_start[i] = ave * i;
         local_end[i] = ave * (i + 1);
     }
-    local_end[n_threads-1] = n;
+    local_end[n_threads-1] = VERTICES;
 
     int iter_num = 0;
     bool changed;
