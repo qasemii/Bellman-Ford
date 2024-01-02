@@ -93,9 +93,9 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_cha
     }
 }
 
-void bellman_ford(int *weights, int *distance, int start, int blocksPerGrid, int threadsPerBlock, bool *has_negative_cycle) {
-    dim3 blocks(blocksPerGrid);
-    dim3 threads(threadsPerBlock);
+void bellman_ford(int *weights, int *distance, int start, int blkdim, bool *has_negative_cycle) {
+    dim3 grids((VERTICES + blkdim - 1) / blkdim);
+    dim3 blocks(blkdim);
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -120,7 +120,7 @@ void bellman_ford(int *weights, int *distance, int start, int blocksPerGrid, int
         h_changed = false;
         cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
 
-        bellman_ford_kernel<<<blocks, threads>>>(d_weights, d_distance, d_changed);
+        bellman_ford_kernel<<<grids, blocks>>>(d_weights, d_distance, d_changed);
         cudaDeviceSynchronize();
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
@@ -146,9 +146,8 @@ void bellman_ford(int *weights, int *distance, int start, int blocksPerGrid, int
 
 int main(int argc, char **argv) {
     // make sure we pass blockPerGrid and threadsPerBlock
-    assert(argv[1] != NULL && argv[2]!=NULL);
-    int blocksPerGrid = atoi(argv[1]);
-    int threadsPerBlock = atoi(argv[2]);
+    assert(argv[1] != NULL);
+    int blkdim = atoi(argv[1]);
 
     int n_edges;
 
@@ -164,13 +163,12 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford(weights, distance, 0, VERTICES, blocksPerGrid, threadsPerBlock, &has_negative_cycle);
+    bellman_ford(weights, distance, 0, VERTICES, int blkdim, &has_negative_cycle);
     cudaDeviceSynchronize();
     tend = gettime();
 
     printf("CUDA Specifications-------------\n");
-    printf("blockPerGrid:\t\t%d\n", blocksPerGrid);
-    printf("threadsPerBlock:\t%d\n", threadsPerBlock);
+    printf("blockPerGrid:\t\t%d\n", blkdim);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance, has_negative_cycle);
