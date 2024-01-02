@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford(weights, distance, 0, int blkdim, &has_negative_cycle);
+    bellman_ford(weights, distance, 0, blkdim, &has_negative_cycle);
     cudaDeviceSynchronize();
     tend = gettime();
 
