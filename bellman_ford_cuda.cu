@@ -151,16 +151,14 @@ int main(int argc, char **argv) {
     int threadsPerBlock = atoi(argv[2]);
 
     int n_edges;
-    
+
+    // initializing distance array
+    int* distance = (int*)malloc(VERTICES * sizeof(int));
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
     read_file("data/USA-road-NY.csv", weights, &n_edges);
 
-    // initializing distance array
-    int* distance = (int*)malloc(VERTICES * sizeof(int));
-
     bool has_negative_cycle = false;
-
     double tstart, tend;
 
     // recored the execution time
