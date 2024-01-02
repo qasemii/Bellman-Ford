@@ -58,13 +58,13 @@ void read_file(const char* filename, int* weights, int* n_edges) {
     fclose(file);
 }
 
-void save_results(int *dist, bool has_negative_cycle) {
+void save_results(int *distance, bool has_negative_cycle) {
     FILE *outputf = fopen("cuda_output.txt", "w");
     if (!has_negative_cycle) {
         for (int i = 0; i < VERTICES; i++) {
-            if (dist[i] > INT_MAX)
-                dist[i] = INT_MAX;
-            fprintf(outputf, "%d\n", dist[i]);
+            if (distance[i] > INT_MAX)
+                distance[i] = INT_MAX;
+            fprintf(outputf, "%d\n", distance[i]);
         }
         fflush(outputf);
     } else {
@@ -82,10 +82,10 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, int n, bool
             for (int v = global_tid; v < n; v += elementSkip) {
                 int weight = d_weights[u * n + v];
                 if (weight < INF) {
-                    int new_dist = d_distance[u] + weight;
-                    if (new_dist < d_distance[v]) {
+                    int new_distance = d_distance[u] + weight;
+                    if (new_distance < d_distance[v]) {
                         *d_changed = true;
-                        d_distance[v] = new_dist;
+                        d_distance[v] = new_distance;
                     }
                 }
             }
