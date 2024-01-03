@@ -178,18 +178,12 @@ void bellman_ford_withBlock(int *weights, int *distance, int start) {
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
         iter_num++;
-        if (iter_num >= VERTICES - 1) {
-            *has_negative_cycle = true;
-            break;
-        }
         if (!h_changed) {
             break;
         }
     }
-    if (!*has_negative_cycle) {
-        // Copy the shortest path distances back to the host memory
-        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
-    }
+    // Copy the shortest path distances back to the host memory
+    cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
     
     // Free up the GPU memory.
     cudaFree(d_weights);
