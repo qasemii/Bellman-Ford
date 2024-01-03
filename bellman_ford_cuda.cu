@@ -115,7 +115,7 @@ void bellman_ford_sequential(int *weights, int *distance, int start, bool *has_n
         h_changed = false;
         cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
 
-        bellman_ford_kernel<<<1, 1>>>(d_weights, d_distance, d_changed);
+        bellman_ford_sequential_kernel<<<1, 1>>>(d_weights, d_distance, d_changed);
         cudaDeviceSynchronize();
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
@@ -183,7 +183,7 @@ void bellman_ford_withBlock(int *weights, int *distance, int start, bool *has_ne
         h_changed = false;
         cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
 
-        bellman_ford_kernel<<<VERTICES, 1>>>(d_weights, d_distance, d_changed);
+        bellman_ford_withBlock_kernel<<<VERTICES, 1>>>(d_weights, d_distance, d_changed);
         cudaDeviceSynchronize();
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
