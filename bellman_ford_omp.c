@@ -128,8 +128,6 @@ void bellman_ford(int* weights, int* distance, int start, int n_threads) {
             }
         }
     }
-
-    free(weights);
 }
 
 int main() {
@@ -169,6 +167,9 @@ int main() {
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance);
+    
+    free(weights);
+    free(distance);
 
     return 0;
 }
