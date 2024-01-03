@@ -53,22 +53,18 @@ void read_file(const char* filename, int* weights, int* n_edges) {
     fclose(file);
 }
 
-void save_results(int *dist, bool has_negative_cycle) {
+void save_results(int *dist) {
     FILE *outputf = fopen("omp_output.txt", "w");
-    if (!has_negative_cycle) {
-        for (int i = 0; i < VERTICES; i++) {
-            if (dist[i] > INF)
-                dist[i] = INF;
-            fprintf(outputf, "%d\n", dist[i]);
-        }
-        fflush(outputf);
-    } else {
-        fprintf(outputf, "Negative cycle detected!\n");
+    for (int i = 0; i < VERTICES; i++) {
+        if (dist[i] > INF)
+            dist[i] = INF;
+        fprintf(outputf, "%d\n", dist[i]);
     }
+    fflush(outputf);
     fclose(outputf);
 }
 
-void bellman_ford(int* weights, int* distance, int start, int n_threads, bool* has_negative_cycle) {
+void bellman_ford(int* weights, int* distance, int start, int n_threads) {
 
     int local_start[n_threads], local_end[n_threads];
     
@@ -130,23 +126,6 @@ void bellman_ford(int* weights, int* distance, int start, int n_threads, bool* h
         }
     }
 
-    // check negative cycles
-    if (iter_num == VERTICES - 1) {
-        changed = false;
-        for (int u = 0; u < VERTICES; u++) {
-            #pragma omp parallel for reduction(| : changed)
-            for (int v = 0; v < VERTICES; v++) {
-                int weight = weights[u * VERTICES + v];
-                if (weight < INF) {
-                    if (distance[u] + weight < distance[v]) { // if we can relax one more step, then we find a negative cycle
-                        changed = true;
-                    }
-                }
-            }
-        }
-        *has_negative_cycle = changed;
-    }
-
     free(weights);
 }
 
@@ -163,12 +142,11 @@ int main(int argc, char **argv) {
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
     read_file("data/USA-road-NY.csv", weights, &n_edges);
 
-    bool has_negative_cycle = false;
     double tstart, tend;
 
     // recored the execution time
     tstart = omp_get_wtime();
-    bellman_ford(weights, distance, 0, n_threads, &has_negative_cycle);
+    bellman_ford(weights, distance, 0, n_threads);
     tend = omp_get_wtime();
 
     printf("Network Specifications ===============\n");

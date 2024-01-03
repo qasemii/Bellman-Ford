@@ -58,18 +58,14 @@ void read_file(const char* filename, int* weights, int* n_edges) {
     fclose(file);
 }
 
-void save_results(int *distance, bool has_negative_cycle) {
+void save_results(int *distance) {
     FILE *outputf = fopen("cuda_output.txt", "w");
-    if (!has_negative_cycle) {
-        for (int i = 0; i < VERTICES; i++) {
-            if (distance[i] > INT_MAX)
-                distance[i] = INT_MAX;
-            fprintf(outputf, "%d\n", distance[i]);
-        }
-        fflush(outputf);
-    } else {
-        fprintf(outputf, "Negative cycle detected!\n");
+    for (int i = 0; i < VERTICES; i++) {
+        if (distance[i] > INT_MAX)
+            distance[i] = INT_MAX;
+        fprintf(outputf, "%d\n", distance[i]);
     }
+    fflush(outputf);
     fclose(outputf);
 }
 
@@ -90,7 +86,7 @@ __global__ void bellman_ford_sequential_kernel(int *d_weights, int *d_distance, 
     }
 }
 
-void bellman_ford_sequential(int *weights, int *distance, int start, bool *has_negative_cycle) {
+void bellman_ford_sequential(int *weights, int *distance, int start) {
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -120,18 +116,12 @@ void bellman_ford_sequential(int *weights, int *distance, int start, bool *has_n
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
         iter_num++;
-        if (iter_num >= VERTICES - 1) {
-            *has_negative_cycle = true;
-            break;
-        }
         if (!h_changed) {
             break;
         }
     }
-    if (!*has_negative_cycle) {
-        // Copy the shortest path distances back to the host memory
-        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
-    }
+    // Copy the shortest path distances back to the host memory
+    cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
     
     // Free up the GPU memory.
     cudaFree(d_weights);
@@ -159,7 +149,7 @@ __global__ void bellman_ford_withBlock_kernel(int *d_weights, int *d_distance, b
     }
 }
 
-void bellman_ford_withBlock(int *weights, int *distance, int start, bool *has_negative_cycle) {
+void bellman_ford_withBlock(int *weights, int *distance, int start) {
     int iter_num = 0;
     int *d_weights, *d_distance;
     bool *d_changed, h_changed;
@@ -224,7 +214,7 @@ __global__ void bellman_ford_withThread_kernel(int *d_weights, int *d_distance, 
     }
 }
 
-void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim, bool *has_negative_cycle) {
+void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim) {
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -254,18 +244,13 @@ void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim,
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
         iter_num++;
-        if (iter_num >= VERTICES - 1) {
-            *has_negative_cycle = true;
-            break;
-        }
         if (!h_changed) {
             break;
         }
     }
-    if (!*has_negative_cycle) {
-        // Copy the shortest path distances back to the host memory
-        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
-    }
+    // Copy the shortest path distances back to the host memory
+    cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
+    
     
     // Free up the GPU memory.
     cudaFree(d_weights);
@@ -294,7 +279,7 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_cha
     }
 }
 
-void bellman_ford(int *weights, int *distance, int start, int blkdim, bool *has_negative_cycle) {
+void bellman_ford(int *weights, int *distance, int start, int blkdim) {
     dim3 blocks((VERTICES + blkdim - 1) / blkdim);
     dim3 threads(blkdim);
 
@@ -326,18 +311,13 @@ void bellman_ford(int *weights, int *distance, int start, int blkdim, bool *has_
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
         iter_num++;
-        if (iter_num >= VERTICES - 1) {
-            *has_negative_cycle = true;
-            break;
-        }
         if (!h_changed) {
             break;
         }
     }
-    if (!*has_negative_cycle) {
-        // Copy the shortest path distances back to the host memory
-        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
-    }
+    // Copy the shortest path distances back to the host memory
+    cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
+    
     
     // Free up the GPU memory.
     cudaFree(d_weights);
@@ -360,7 +340,6 @@ int main(int argc, char **argv) {
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
     read_file("data/USA-road-NY.csv", weights, &n_edges);
 
-    bool has_negative_cycle = false;
     double tstart, tend;
             
     printf("CUDA Specifications ==================\n");
@@ -368,7 +347,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_sequential(weights, distance, 0, &has_negative_cycle);
+    bellman_ford_sequential(weights, distance, 0);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -379,7 +358,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_withBlock(weights, distance, 0, &has_negative_cycle);
+    bellman_ford_withBlock(weights, distance, 0);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -390,7 +369,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_withThread(weights, distance, 0, blkdim, &has_negative_cycle);
+    bellman_ford_withThread(weights, distance, 0, blkdim);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -401,7 +380,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford(weights, distance, 0, blkdim, &has_negative_cycle);
+    bellman_ford(weights, distance, 0, blkdim);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -409,7 +388,7 @@ int main(int argc, char **argv) {
     printf("(blocks, threads):\t(%d, %d)\n", ((VERTICES+blkdim-1)/blkdim), blkdim);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
-    save_results(distance, has_negative_cycle);
+    save_results(distance);
 
     return 0;
 }
