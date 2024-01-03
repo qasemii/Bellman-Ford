@@ -49,7 +49,6 @@ void read_file(const char* filename, int* weights, int* n_edges) {
         if (src_id < VERTICES && dest_id < VERTICES) {
             (*n_edges)++;
             weights[src_id * VERTICES + dest_id] = distance;
-            printf("%d\t%dt%dt%d\n", src_id, dest_id, distance, weights[src_id * VERTICES + dest_id]);
         }
     }
     fclose(file);
