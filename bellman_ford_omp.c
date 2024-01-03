@@ -99,10 +99,8 @@ void bellman_ford(int* weights, int* distance, int start, int n_threads) {
             for (int u = 0; u < VERTICES; u++) {
                 for (int v = local_start[my_rank]; v < local_end[my_rank]; v++) {
                     int weight = weights[u * VERTICES + v];
-                    printf("weight: %d\n", weight);
                     if (weight < INF) {
                         int new_dis = distance[u] + weight;
-                        printf("new_dis: %d\n\n", new_dis);
                         if (new_dis < distance[v]) {
                             local_changed[my_rank] = true;
                             distance[v] = new_dis;
@@ -144,21 +142,25 @@ int main(int argc, char **argv) {
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
     read_file("data/USA-road-NY.csv", weights, &n_edges);
 
-    double tstart, tend;
+    for (int i = 0; i < VERTICES; i++) {
+        printf("%d\n", weights[i]);
+    }
 
-    // recored the execution time
-    tstart = omp_get_wtime();
-    bellman_ford(weights, distance, 0, n_threads);
-    tend = omp_get_wtime();
+    // double tstart, tend;
 
-    printf("Network Specifications ===============\n");
-    printf("Number of nodes:\t%d\n", VERTICES);
-    printf("Number of edges:\t%d\n\n", n_edges);
-    printf("OpenMP Specifications ================\n");
-    printf("Number of THREADS:\t%d\n", n_threads);
-    printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
+    // // recored the execution time
+    // tstart = omp_get_wtime();
+    // bellman_ford(weights, distance, 0, n_threads);
+    // tend = omp_get_wtime();
 
-    save_results(distance);
+    // printf("Network Specifications ===============\n");
+    // printf("Number of nodes:\t%d\n", VERTICES);
+    // printf("Number of edges:\t%d\n\n", n_edges);
+    // printf("OpenMP Specifications ================\n");
+    // printf("Number of THREADS:\t%d\n", n_threads);
+    // printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
+
+    // save_results(distance);
 
     return 0;
 }
