@@ -14,6 +14,6 @@ gcc -fopenmp bellman_ford_omp.c -o bellman_ford_omp
 nvcc bellman_ford_cuda.cu -o bellman_ford_cuda
 gcc compare_omp_cuda.c -o compare_omp_cuda
 
-./bellman_ford_omp 2 #NUM_THREADS
-./bellman_ford_cuda 128 #BLKDIM
+./bellman_ford_omp
+./bellman_ford_cuda
 ./compare_omp_cuda
