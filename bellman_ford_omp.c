@@ -6,9 +6,16 @@
 #include <limits.h>
 #include <assert.h>
 
+// 1000    196
+// 5000    2978
+// 10000   2978
+// 20000   2978
+// 25000   2978
+// 30000   2978
 
 #define INF 9999999
 #define VERTICES 1000 //total vertices 264,346
+#define START 196 //2978
 
 
 void read_file(const char* filename, int* weights, int* n_edges) {
@@ -147,7 +154,7 @@ int main(int argc, char **argv) {
 
     // recored the execution time
     tstart = omp_get_wtime();
-    bellman_ford(weights, distance, 0, n_threads);
+    bellman_ford(weights, distance, START, n_threads);
     tend = omp_get_wtime();
 
     printf("Network Specifications ===============\n");

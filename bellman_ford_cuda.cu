@@ -6,8 +6,16 @@
 #include <time.h>
 // #include "hpc.h"
 
+// 1000    196
+// 5000    2978
+// 10000   2978
+// 20000   2978
+// 25000   2978
+// 30000   2978
+
 #define INF 9999999
 #define VERTICES 1000 //total vertices 264,346
+#define START 196 //2978
 
 
 double gettime(void){
@@ -341,7 +349,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_sequential(weights, distance, 0);
+    bellman_ford_sequential(weights, distance, START);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -352,7 +360,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_withThread(weights, distance, 0, blkdim);
+    bellman_ford_withThread(weights, distance, START, blkdim);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -363,7 +371,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_withBlock(weights, distance, 0);
+    bellman_ford_withBlock(weights, distance, START);
     cudaDeviceSynchronize();
     tend = gettime();
 
@@ -374,7 +382,7 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford(weights, distance, 0, blkdim);
+    bellman_ford(weights, distance, START, blkdim);
     cudaDeviceSynchronize();
     tend = gettime();
 
