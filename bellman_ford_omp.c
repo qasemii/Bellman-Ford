@@ -48,6 +48,7 @@ void read_file(const char* filename, int* weights, int* n_edges) {
         if (src_id < VERTICES && dest_id < VERTICES) {
             (*n_edges)++;
             weights[src_id * VERTICES + dest_id] = distance;
+            printf("%d\t%d\t%d\n", src_id, dest_id, distance);
         }
     }
     fclose(file);
@@ -141,10 +142,6 @@ int main(int argc, char **argv) {
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
     read_file("data/USA-road-NY.csv", weights, &n_edges);
-
-    for (int i = 0; i < VERTICES; i++) {
-        printf("%d\n", weights[i]);
-    }
 
     // double tstart, tend;
 
