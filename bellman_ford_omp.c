@@ -67,7 +67,7 @@ void save_results(int *dist) {
     fclose(outputf);
 }
 
-void bellman_ford(int* weights, int* distance, int start, int n_theads) {
+void bellman_ford(int* weights, int* distance, int start, int n_threads) {
 
     int local_start[n_threads], local_end[n_threads];
     
