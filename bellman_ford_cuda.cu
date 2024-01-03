@@ -6,8 +6,8 @@
 #include <time.h>
 // #include "hpc.h"
 
-#define INF 999999
-#define VERTICES 10000 //total vertices 264,346
+#define INF 9999999
+#define VERTICES 1000 //total vertices 264,346
 
 
 double gettime(void){
