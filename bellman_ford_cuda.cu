@@ -73,6 +73,207 @@ void save_results(int *distance, bool has_negative_cycle) {
     fclose(outputf);
 }
 
+// sequential ================================================================================================
+__global__ void bellman_ford_sequential_kernel(int *d_weights, int *d_distance, bool *d_changed) {
+    
+    for (int u = 0; u < VERTICES; u++) {
+        for (int v = 0; v < VERTICES; v++) {
+            int weight = d_weights[u * VERTICES + v];
+            if (weight < INF) {
+                int new_distance = d_distance[u] + weight;
+                if (new_distance < d_distance[v]) {
+                    *d_changed = true;
+                    d_distance[v] = new_distance;
+                }
+            }
+        }
+    }
+}
+
+void bellman_ford_sequential(int *weights, int *distance, int start, bool *has_negative_cycle) {
+
+    int iter_num = 0;
+    int *d_weights, *d_distance;
+    bool *d_changed, h_changed;
+
+    // initializing the distance array
+    for (int i = 0; i < VERTICES; i++) {
+        distance[i] = INF;
+    }
+    distance[start] = 0;
+
+    // Allocate GPU memory for d_weights, d_distance, d_changed
+    cudaMalloc(&d_weights, sizeof(int) * VERTICES * VERTICES);
+    cudaMalloc(&d_distance, sizeof(int) * VERTICES);
+    cudaMalloc(&d_changed, sizeof(bool));
+
+    //Transfer the data from host to GPU.
+    cudaMemcpy(d_weights, weights, sizeof(int) * VERTICES * VERTICES, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_distance, distance, sizeof(int) * VERTICES, cudaMemcpyHostToDevice);
+
+    for (;;) {
+        h_changed = false;
+        cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
+
+        bellman_ford_kernel<<<1, 1>>>(d_weights, d_distance, d_changed);
+        cudaDeviceSynchronize();
+        cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
+
+        iter_num++;
+        if (iter_num >= VERTICES - 1) {
+            *has_negative_cycle = true;
+            break;
+        }
+        if (!h_changed) {
+            break;
+        }
+    }
+    if (!*has_negative_cycle) {
+        // Copy the shortest path distances back to the host memory
+        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
+    }
+    
+    // Free up the GPU memory.
+    cudaFree(d_weights);
+    cudaFree(d_distance);
+    cudaFree(d_changed);
+}
+
+// bellman_ford_withBlocks ===================================================================================
+__global__ void bellman_ford_withBlock_kernel(int *d_weights, int *d_distance, bool *d_changed) {
+    int global_tid = blockIdx.x;
+
+    if (global_tid < VERTICES){
+        for (int u = 0; u < VERTICES; u++) {
+            for (int v = global_tid; v < VERTICES; v ++) {
+                int weight = d_weights[u * VERTICES + v];
+                if (weight < INF) {
+                    int new_distance = d_distance[u] + weight;
+                    if (new_distance < d_distance[v]) {
+                        *d_changed = true;
+                        d_distance[v] = new_distance;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void bellman_ford_withBlock(int *weights, int *distance, int start, bool *has_negative_cycle) {
+    int iter_num = 0;
+    int *d_weights, *d_distance;
+    bool *d_changed, h_changed;
+
+    // initializing the distance array
+    for (int i = 0; i < VERTICES; i++) {
+        distance[i] = INF;
+    }
+    distance[start] = 0;
+
+    // Allocate GPU memory for d_weights, d_distance, d_changed
+    cudaMalloc(&d_weights, sizeof(int) * VERTICES * VERTICES);
+    cudaMalloc(&d_distance, sizeof(int) * VERTICES);
+    cudaMalloc(&d_changed, sizeof(bool));
+
+    //Transfer the data from host to GPU.
+    cudaMemcpy(d_weights, weights, sizeof(int) * VERTICES * VERTICES, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_distance, distance, sizeof(int) * VERTICES, cudaMemcpyHostToDevice);
+
+    for (;;) {
+        h_changed = false;
+        cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
+
+        bellman_ford_kernel<<<VERTICES, 1>>>(d_weights, d_distance, d_changed);
+        cudaDeviceSynchronize();
+        cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
+
+        iter_num++;
+        if (iter_num >= VERTICES - 1) {
+            *has_negative_cycle = true;
+            break;
+        }
+        if (!h_changed) {
+            break;
+        }
+    }
+    if (!*has_negative_cycle) {
+        // Copy the shortest path distances back to the host memory
+        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
+    }
+    
+    // Free up the GPU memory.
+    cudaFree(d_weights);
+    cudaFree(d_distance);
+    cudaFree(d_changed);
+}
+
+// bellman_ford_withThreads ==================================================================================
+__global__ void bellman_ford_withThread_kernel(int *d_weights, int *d_distance, bool *d_changed) {
+
+    for (int u = 0; u < VERTICES; u++) {
+        for (int v = threadIdx.x; v < VERTICES; v += blockDim.x) {
+            int weight = d_weights[u * VERTICES + v];
+            if (weight < INF) {
+                int new_distance = d_distance[u] + weight;
+                if (new_distance < d_distance[v]) {
+                    *d_changed = true;
+                    d_distance[v] = new_distance;
+                }
+            }
+        }
+    }
+}
+
+void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim, bool *has_negative_cycle) {
+
+    int iter_num = 0;
+    int *d_weights, *d_distance;
+    bool *d_changed, h_changed;
+
+    // initializing the distance array
+    for (int i = 0; i < VERTICES; i++) {
+        distance[i] = INF;
+    }
+    distance[start] = 0;
+
+    // Allocate GPU memory for d_weights, d_distance, d_changed
+    cudaMalloc(&d_weights, sizeof(int) * VERTICES * VERTICES);
+    cudaMalloc(&d_distance, sizeof(int) * VERTICES);
+    cudaMalloc(&d_changed, sizeof(bool));
+
+    //Transfer the data from host to GPU.
+    cudaMemcpy(d_weights, weights, sizeof(int) * VERTICES * VERTICES, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_distance, distance, sizeof(int) * VERTICES, cudaMemcpyHostToDevice);
+
+    for (;;) {
+        h_changed = false;
+        cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
+
+        bellman_ford_withThread_kernel<<<1, blkdim>>>(d_weights, d_distance, d_changed);
+        cudaDeviceSynchronize();
+        cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
+
+        iter_num++;
+        if (iter_num >= VERTICES - 1) {
+            *has_negative_cycle = true;
+            break;
+        }
+        if (!h_changed) {
+            break;
+        }
+    }
+    if (!*has_negative_cycle) {
+        // Copy the shortest path distances back to the host memory
+        cudaMemcpy(distance, d_distance, sizeof(int) * VERTICES, cudaMemcpyDeviceToHost);
+    }
+    
+    // Free up the GPU memory.
+    cudaFree(d_weights);
+    cudaFree(d_distance);
+    cudaFree(d_changed);
+}
+
+// withBlocksThreads =========================================================================================
 __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_changed) {
     int global_tid = blockDim.x * blockIdx.x + threadIdx.x;
     int elementSkip = blockDim.x * gridDim.x;
@@ -144,6 +345,8 @@ void bellman_ford(int *weights, int *distance, int start, int blkdim, bool *has_
     cudaFree(d_changed);
 }
 
+// ===========================================================================================================
+
 int main(int argc, char **argv) {
     // make sure we pass blockPerGrid and threadsPerBlock
     assert(argv[1] != NULL);
@@ -160,6 +363,38 @@ int main(int argc, char **argv) {
     bool has_negative_cycle = false;
     double tstart, tend;
 
+    printf("CUDA Specifications-------------\n");
+
+    // recored the execution time
+    cudaDeviceReset();
+    tstart = gettime();
+    bellman_ford_sequential(weights, distance, 0, &has_negative_cycle);
+    cudaDeviceSynchronize();
+    tend = gettime();
+
+    printf("<<<blocks, threads>>>:\t\t<<<1, 1>>\n");
+    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+
+    // recored the execution time
+    cudaDeviceReset();
+    tstart = gettime();
+    bellman_ford_withBlock(weights, distance, 0, &has_negative_cycle);
+    cudaDeviceSynchronize();
+    tend = gettime();
+
+    printf("<<<blocks, threads>>>:\t\t<<<%d, 1>>\n", VERTICES);
+    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+
+    // recored the execution time
+    cudaDeviceReset();
+    tstart = gettime();
+    bellman_ford_withThread(weights, distance, 0, blkdim, &has_negative_cycle);
+    cudaDeviceSynchronize();
+    tend = gettime();
+
+    printf("<<<blocks, threads>>>:\t\t<<<1, %d>>\n", blkdim);
+    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
@@ -167,8 +402,7 @@ int main(int argc, char **argv) {
     cudaDeviceSynchronize();
     tend = gettime();
 
-    printf("CUDA Specifications-------------\n");
-    printf("blockPerGrid:\t\t%d\n", blkdim);
+    printf("<<<blocks, threads>>>:\t\t<<<%d, %d>>\n");
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance, has_negative_cycle);
