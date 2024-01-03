@@ -145,7 +145,7 @@ __global__ void bellman_ford_withBlock_kernel(int *d_weights, int *d_distance, b
 
     if (global_tid < VERTICES){
         for (int u = 0; u < VERTICES; u++) {
-            for (int v = global_tid; v < VERTICES; v++) {
+            for (int v = global_tid; v < VERTICES; v += gridDim.x) {
                 int weight = d_weights[u * VERTICES + v];
                 if (weight < INF) {
                     int new_distance = d_distance[u] + weight;
@@ -362,8 +362,8 @@ int main(int argc, char **argv) {
 
     bool has_negative_cycle = false;
     double tstart, tend;
-
-    printf("CUDA Specifications-------------\n");
+            
+    printf("CUDA Specifications ==================\n");
 
     // recored the execution time
     cudaDeviceReset();

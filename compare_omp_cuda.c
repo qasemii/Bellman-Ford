@@ -34,7 +34,7 @@ int main() {
         return 1;
     }
 
-    printf("CUDA vs OpenMP------------------\n");
+    printf("CUDA vs OpenMP =======================\n");
     // Compare each line in the files
     while (fgets(line1, sizeof(line1), file1) && fgets(line2, sizeof(line2), file2)) {
         int num1, num2;

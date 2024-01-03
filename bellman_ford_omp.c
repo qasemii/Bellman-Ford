@@ -171,10 +171,10 @@ int main(int argc, char **argv) {
     bellman_ford(weights, distance, 0, n_threads, &has_negative_cycle);
     tend = omp_get_wtime();
 
-    printf("Network Specifications----------\n");
+    printf("Network Specifications ===============\n");
     printf("Number of nodes:\t%d\n", VERTICES);
     printf("Number of edges:\t%d\n\n", n_edges);
-    printf("OpenMP Specifications-----------\n");
+    printf("OpenMP Specifications ================\n");
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
