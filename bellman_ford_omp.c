@@ -153,7 +153,7 @@ int main(int argc, char **argv) {
     printf("Network Specifications ===============\n");
     printf("Number of nodes:\t%d\n", VERTICES);
     printf("Number of edges:\t%d\n", n_edges);
-    printf("Density of graph:\t%.2f\n\n", (n_edges/(VERTICES*(VERTICES-1));
+    printf("Density of graph:\t%.2f\n\n", n_edges/(VERTICES*(VERTICES-1)));
     printf("OpenMP Specifications ================\n");
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
