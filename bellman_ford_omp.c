@@ -132,10 +132,7 @@ void bellman_ford(int* weights, int* distance, int start, int n_theads) {
     free(weights);
 }
 
-int main(int argc, char **argv) {
-    // make sure we pass number of threads (N_THREADS)
-    assert(argv[1] != NULL);
-    int n_threads = atoi(argv[1]);
+int main() {
 
     int n_edges;
 
