@@ -337,38 +337,38 @@ int main() {
             
     printf("CUDA Specifications ==================\n");
 
-    // recored the execution time
-    cudaDeviceReset();
-    tstart = gettime();
-    bellman_ford_sequential(weights, distance, START);
-    cudaDeviceSynchronize();
-    tend = gettime();
+    // // recored the execution time
+    // cudaDeviceReset();
+    // tstart = gettime();
+    // bellman_ford_sequential(weights, distance, START);
+    // cudaDeviceSynchronize();
+    // tend = gettime();
 
-    printf("Sequential Implementation\n");
-    printf("(blocks, threads):\t(1, 1)\n");
-    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+    // printf("Sequential Implementation\n");
+    // printf("(blocks, threads):\t(1, 1)\n");
+    // printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
-    // recored the execution time
-    cudaDeviceReset();
-    tstart = gettime();
-    bellman_ford_withThread(weights, distance, START);
-    cudaDeviceSynchronize();
-    tend = gettime();
+    // // recored the execution time
+    // cudaDeviceReset();
+    // tstart = gettime();
+    // bellman_ford_withThread(weights, distance, START);
+    // cudaDeviceSynchronize();
+    // tend = gettime();
 
-    printf("Thread Implementation\n");
-    printf("(blocks, threads):\t(1, %d)\n", BLKDIM);
-    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+    // printf("Thread Implementation\n");
+    // printf("(blocks, threads):\t(1, %d)\n", BLKDIM);
+    // printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
-    // recored the execution time
-    cudaDeviceReset();
-    tstart = gettime();
-    bellman_ford_withBlock(weights, distance, START);
-    cudaDeviceSynchronize();
-    tend = gettime();
+    // // recored the execution time
+    // cudaDeviceReset();
+    // tstart = gettime();
+    // bellman_ford_withBlock(weights, distance, START);
+    // cudaDeviceSynchronize();
+    // tend = gettime();
 
-    printf("Block Parallel Implementation\n");
-    printf("(blocks, threads):\t(%d, 1)\n", VERTICES);
-    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+    // printf("Block Parallel Implementation\n");
+    // printf("(blocks, threads):\t(%d, 1)\n", VERTICES);
+    // printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
     cudaDeviceReset();
