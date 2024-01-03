@@ -141,29 +141,22 @@ int main(int argc, char **argv) {
     // reading the adjacency matrix
     int* weights = (int*)malloc(VERTICES * VERTICES * sizeof(int));
     read_file("data/USA-road-NY.csv", weights, &n_edges);
-    for (int i=0; i<VERTICES; i++){
-        for (int j=0; j<VERTICES; j++){
-            printf("%d\t%d\t%d\n", i, j, weights[i * VERTICES + j]);
-        }
-    }
-    
 
+    double tstart, tend;
 
-    // double tstart, tend;
+    // recored the execution time
+    tstart = omp_get_wtime();
+    bellman_ford(weights, distance, 0, n_threads);
+    tend = omp_get_wtime();
 
-    // // recored the execution time
-    // tstart = omp_get_wtime();
-    // bellman_ford(weights, distance, 0, n_threads);
-    // tend = omp_get_wtime();
+    printf("Network Specifications ===============\n");
+    printf("Number of nodes:\t%d\n", VERTICES);
+    printf("Number of edges:\t%d\n\n", n_edges);
+    printf("OpenMP Specifications ================\n");
+    printf("Number of THREADS:\t%d\n", n_threads);
+    printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
-    // printf("Network Specifications ===============\n");
-    // printf("Number of nodes:\t%d\n", VERTICES);
-    // printf("Number of edges:\t%d\n\n", n_edges);
-    // printf("OpenMP Specifications ================\n");
-    // printf("Number of THREADS:\t%d\n", n_threads);
-    // printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
-
-    // save_results(distance);
+    save_results(distance);
 
     return 0;
 }
