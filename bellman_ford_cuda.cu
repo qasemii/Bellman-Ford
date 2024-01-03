@@ -295,8 +295,8 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_cha
 }
 
 void bellman_ford(int *weights, int *distance, int start, int blkdim, bool *has_negative_cycle) {
-    dim3 grids((VERTICES + blkdim - 1) / blkdim);
-    dim3 blocks(blkdim);
+    dim3 blocks((VERTICES + blkdim - 1) / blkdim);
+    dim3 threads(blkdim);
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -321,7 +321,7 @@ void bellman_ford(int *weights, int *distance, int start, int blkdim, bool *has_
         h_changed = false;
         cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
 
-        bellman_ford_kernel<<<grids, blocks>>>(d_weights, d_distance, d_changed);
+        bellman_ford_kernel<<<blocks, threads>>>(d_weights, d_distance, d_changed);
         cudaDeviceSynchronize();
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
