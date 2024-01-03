@@ -69,7 +69,7 @@ void save_results(int *distance) {
     fclose(outputf);
 }
 
-// sequential ================================================================================================
+// bellman_ford_sequential ===================================================================================
 __global__ void bellman_ford_sequential_kernel(int *d_weights, int *d_distance, bool *d_changed) {
     
     for (int u = 0; u < VERTICES; u++) {
@@ -252,7 +252,7 @@ void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim)
     cudaFree(d_changed);
 }
 
-// withBlocksThreads =========================================================================================
+// bellman_ford_withBlocksThreads ============================================================================
 __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_changed) {
     int global_tid = blockDim.x * blockIdx.x + threadIdx.x;
     int elementSkip = blockDim.x * gridDim.x;
@@ -352,23 +352,23 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_withBlock(weights, distance, 0);
-    cudaDeviceSynchronize();
-    tend = gettime();
-
-    printf("Block Parallel Implementation\n");
-    printf("(blocks, threads):\t(%d, 1)\n", VERTICES);
-    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
-
-    // recored the execution time
-    cudaDeviceReset();
-    tstart = gettime();
     bellman_ford_withThread(weights, distance, 0, blkdim);
     cudaDeviceSynchronize();
     tend = gettime();
 
     printf("Thread Implementation\n");
     printf("(blocks, threads):\t(1, %d)\n", blkdim);
+    printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
+
+    // recored the execution time
+    cudaDeviceReset();
+    tstart = gettime();
+    bellman_ford_withBlock(weights, distance, 0);
+    cudaDeviceSynchronize();
+    tend = gettime();
+
+    printf("Block Parallel Implementation\n");
+    printf("(blocks, threads):\t(%d, 1)\n", VERTICES);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
