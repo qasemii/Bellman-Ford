@@ -156,7 +156,7 @@ int main(int argc, char **argv) {
     printf("Number of THREADS:\t%d\n", n_threads);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
-    save_results(distance, false);
+    save_results(distance);
 
     return 0;
 }
