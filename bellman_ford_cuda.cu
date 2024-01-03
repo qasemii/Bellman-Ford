@@ -145,7 +145,7 @@ __global__ void bellman_ford_withBlock_kernel(int *d_weights, int *d_distance, b
 
     if (global_tid < VERTICES){
         for (int u = 0; u < VERTICES; u++) {
-            for (int v = global_tid; v < VERTICES; v ++) {
+            for (int v = global_tid; v < VERTICES; v++) {
                 int weight = d_weights[u * VERTICES + v];
                 if (weight < INF) {
                     int new_distance = d_distance[u] + weight;
@@ -372,7 +372,8 @@ int main(int argc, char **argv) {
     cudaDeviceSynchronize();
     tend = gettime();
 
-    printf("<<<blocks, threads>>>:\t\t<<<1, 1>>\n");
+    printf("Sequential Implementation\n");
+    printf("(blocks, threads):\t(1, 1)\n");
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -382,7 +383,8 @@ int main(int argc, char **argv) {
     cudaDeviceSynchronize();
     tend = gettime();
 
-    printf("<<<blocks, threads>>>:\t\t<<<%d, 1>>\n", VERTICES);
+    printf("Block Parallel Implementation\n");
+    printf("(blocks, threads):\t(%d, 1)\n", VERTICES);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -392,7 +394,8 @@ int main(int argc, char **argv) {
     cudaDeviceSynchronize();
     tend = gettime();
 
-    printf("<<<blocks, threads>>>:\t\t<<<1, %d>>\n", blkdim);
+    printf("Thread Implementation\n");
+    printf("(blocks, threads):\t(1, %d)\n", blkdim);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -402,7 +405,8 @@ int main(int argc, char **argv) {
     cudaDeviceSynchronize();
     tend = gettime();
 
-    printf("<<<blocks, threads>>>:\t\t<<<%d, %d>>\n");
+    printf("Thread/Block Implementation\n");
+    printf("(blocks, threads):\t(%d, %d)\n", ((VERTICES+blkdim-1)/blkdim), blkdim);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance, has_negative_cycle);
