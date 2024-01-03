@@ -6,16 +6,11 @@
 #include <limits.h>
 #include <assert.h>
 
-// 1000    196
-// 5000    2978
-// 10000   2978
-// 20000   2978
-// 25000   2978
-// 30000   2978
 
 #define INF 9999999
-#define VERTICES 1000 //total vertices 264,346
-#define START 196 //2978
+#define VERTICES 5000 //total vertices 264,346
+#define START 2978 //this is the node with maximum outgoing edges
+#define N_THREADS 2
 
 
 void read_file(const char* filename, int* weights, int* n_edges) {
@@ -72,7 +67,7 @@ void save_results(int *dist) {
     fclose(outputf);
 }
 
-void bellman_ford(int* weights, int* distance, int start, int n_threads) {
+void bellman_ford(int* weights, int* distance, int start, int n_theads) {
 
     int local_start[n_threads], local_end[n_threads];
     
@@ -161,8 +156,14 @@ int main(int argc, char **argv) {
     printf("Number of nodes:\t%d\n", VERTICES);
     printf("Number of edges:\t%d\n", n_edges);
     // printf("Density of graph:\t%.6f\n\n", (float)n_edges/(VERTICES*(VERTICES-1)));
+
     printf("OpenMP Specifications ================\n");
-    printf("Number of THREADS:\t%d\n", n_threads);
+    printf("Sequential Implementation\n");
+    printf("Number of THREADS:\t%d\n", 1);
+    printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
+
+    printf("Multicore Implementation\n");
+    printf("Number of THREADS:\t%d\n", N_THREADS);
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance);

@@ -4,18 +4,12 @@
 #include <limits.h>
 #include <assert.h>
 #include <time.h>
-// #include "hpc.h"
 
-// 1000    196
-// 5000    2978
-// 10000   2978
-// 20000   2978
-// 25000   2978
-// 30000   2978
 
 #define INF 9999999
-#define VERTICES 1000 //total vertices 264,346
-#define START 196 //2978
+#define VERTICES 5000 //total vertices 264,346
+#define START 2978 //this is the node with maximum outgoing edges
+#define BLKDIM 128
 
 
 double gettime(void){
@@ -216,7 +210,7 @@ __global__ void bellman_ford_withThread_kernel(int *d_weights, int *d_distance, 
     }
 }
 
-void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim) {
+void bellman_ford_withThread(int *weights, int *distance, int start) {
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -241,7 +235,7 @@ void bellman_ford_withThread(int *weights, int *distance, int start, int blkdim)
         h_changed = false;
         cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
 
-        bellman_ford_withThread_kernel<<<1, blkdim>>>(d_weights, d_distance, d_changed);
+        bellman_ford_withThread_kernel<<<1, BLKDIM>>>(d_weights, d_distance, d_changed);
         cudaDeviceSynchronize();
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
@@ -281,9 +275,9 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_cha
     }
 }
 
-void bellman_ford(int *weights, int *distance, int start, int blkdim) {
-    dim3 blocks((VERTICES + blkdim - 1) / blkdim);
-    dim3 threads(blkdim);
+void bellman_ford(int *weights, int *distance, int start) {
+    dim3 blocks((VERTICES + BLKDIM - 1) / BLKDIM);
+    dim3 threads(BLKDIM);
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -329,10 +323,7 @@ void bellman_ford(int *weights, int *distance, int start, int blkdim) {
 
 // ===========================================================================================================
 
-int main(int argc, char **argv) {
-    // make sure we pass blockPerGrid and threadsPerBlock
-    assert(argv[1] != NULL);
-    int blkdim = atoi(argv[1]);
+int main() {
 
     int n_edges;
 
@@ -360,12 +351,12 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford_withThread(weights, distance, START, blkdim);
+    bellman_ford_withThread(weights, distance, START);
     cudaDeviceSynchronize();
     tend = gettime();
 
     printf("Thread Implementation\n");
-    printf("(blocks, threads):\t(1, %d)\n", blkdim);
+    printf("(blocks, threads):\t(1, %d)\n", BLKDIM);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -382,12 +373,12 @@ int main(int argc, char **argv) {
     // recored the execution time
     cudaDeviceReset();
     tstart = gettime();
-    bellman_ford(weights, distance, START, blkdim);
+    bellman_ford(weights, distance, START);
     cudaDeviceSynchronize();
     tend = gettime();
 
     printf("Thread/Block Implementation\n");
-    printf("(blocks, threads):\t(%d, %d)\n", ((VERTICES+blkdim-1)/blkdim), blkdim);
+    printf("(blocks, threads):\t(%d, %d)\n", ((VERTICES+BLKDIM-1)/BLKDIM), BLKDIM);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance);
