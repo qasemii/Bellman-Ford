@@ -144,18 +144,19 @@ int main() {
 
     printf("Network Specifications ===============\n");
     printf("Number of nodes:\t%d\n", VERTICES);
-    printf("Number of edges:\t%d\n", n_edges);
+    printf("Number of edges:\t%d\n\n", n_edges);
     // printf("Density of graph:\t%.6f\n\n", (float)n_edges/(VERTICES*(VERTICES-1)));
 
-    // recored the execution time
-    tstart = omp_get_wtime();
-    bellman_ford(weights, distance, START, 1);
-    tend = omp_get_wtime();
-
     printf("OpenMP Specifications ================\n");
-    printf("Sequential Implementation\n");
-    printf("Number of THREADS:\t%d\n", 1);
-    printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
+
+    // // recored the execution time
+    // tstart = omp_get_wtime();
+    // bellman_ford(weights, distance, START, 1);
+    // tend = omp_get_wtime();
+
+    // printf("Sequential Implementation\n");
+    // printf("Number of THREADS:\t%d\n", 1);
+    // printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
     tstart = omp_get_wtime();
@@ -167,7 +168,7 @@ int main() {
     printf("Execution time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance);
-    
+
     free(weights);
     free(distance);
 
