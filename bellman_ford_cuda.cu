@@ -276,8 +276,8 @@ __global__ void bellman_ford_kernel(int *d_weights, int *d_distance, bool *d_cha
 }
 
 void bellman_ford(int *weights, int *distance, int start) {
-    dim3 blocks((VERTICES + BLKDIM - 1) / BLKDIM);
-    dim3 threads(BLKDIM);
+    dim3 grids((VERTICES + BLKDIM - 1) / BLKDIM);
+    dim3 blocks(BLKDIM);
 
     int iter_num = 0;
     int *d_weights, *d_distance;
@@ -302,7 +302,7 @@ void bellman_ford(int *weights, int *distance, int start) {
         h_changed = false;
         cudaMemcpy(d_changed, &h_changed, sizeof(bool), cudaMemcpyHostToDevice);
 
-        bellman_ford_kernel<<<blocks, threads>>>(d_weights, d_distance, d_changed);
+        bellman_ford_kernel<<<grids, blocks>>>(d_weights, d_distance, d_changed);
         cudaDeviceSynchronize();
         cudaMemcpy(&h_changed, d_changed, sizeof(bool), cudaMemcpyDeviceToHost);
 
@@ -345,7 +345,7 @@ int main() {
     tend = gettime();
 
     printf("Sequential Implementation\n");
-    printf("(blocks, threads):\t(1, 1)\n");
+    printf("(grids, blocks):\t(1, 1)\n");
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -356,7 +356,7 @@ int main() {
     tend = gettime();
 
     printf("Thread Implementation\n");
-    printf("(blocks, threads):\t(1, %d)\n", BLKDIM);
+    printf("(grids, blocks):\t(1, %d)\n", BLKDIM);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -367,7 +367,7 @@ int main() {
     tend = gettime();
 
     printf("Block Parallel Implementation\n");
-    printf("(blocks, threads):\t(%d, 1)\n", VERTICES);
+    printf("(grids, blocks):\t(%d, 1)\n", VERTICES);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     // recored the execution time
@@ -378,7 +378,7 @@ int main() {
     tend = gettime();
 
     printf("Thread/Block Implementation\n");
-    printf("(blocks, threads):\t(%d, %d)\n", ((VERTICES+BLKDIM-1)/BLKDIM), BLKDIM);
+    printf("(grids, blocks):\t(%d, %d)\n", ((VERTICES+BLKDIM-1)/BLKDIM), BLKDIM);
     printf("Exection time:\t\t%.6f sec\n\n", tend-tstart);
 
     save_results(distance);
